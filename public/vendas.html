@@ -3,188 +3,139 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PDV - Boteco 934</title>
+    <title>SISTEMA PDV - BOTECO 934</title>
     <style>
-        * { box-sizing: border-box; }
-        body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            background-color: #e9ecef;
-            overflow: hidden;
-        }
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        body { margin: 0; background: #f4f7f6; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
 
-        header {
-            background-color: #1a1a1a;
-            color: white;
-            padding: 10px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 3px solid #007bff;
-        }
+        /* HEADER */
+        header { background: #1a1a1a; color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #28a745; }
+        .btn-home { background: #444; color: white; text-decoration: none; padding: 8px 15px; border-radius: 4px; font-weight: bold; }
 
-        .btn-home {
-            background-color: #007bff;
-            color: white;
-            text-decoration: none;
-            padding: 8px 20px;
-            border-radius: 5px;
-            font-weight: bold;
-            font-size: 14px;
-        }
+        /* LAYOUT PRINCIPAL */
+        .main { display: flex; flex: 1; overflow: hidden; padding-bottom: 70px; }
 
-        .main-container {
-            display: flex;
-            flex: 1;
-            overflow: hidden;
-            padding-bottom: 70px; 
-        }
+        /* COLUNA ESQUERDA (MESAS E PRODUTOS) */
+        .caixa-operacional { flex: 2; padding: 20px; overflow-y: auto; background: #fff; }
+        .bloco-identificacao { background: #e9ecef; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 5px solid #28a745; }
+        input { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; }
 
-        .vendas-section {
-            flex: 2;
-            padding: 20px;
-            overflow-y: auto;
-        }
+        /* COLUNA DIREITA (CUPOM DETALHADO) */
+        .cupom-container { flex: 1; background: #f8f9fa; border-left: 2px solid #ddd; display: flex; flex-direction: column; padding: 10px; }
+        .cupom-papel { background: #fff; flex: 1; border: 1px solid #ccc; box-shadow: 2px 2px 10px rgba(0,0,0,0.1); padding: 15px; font-family: 'Courier New', Courier, monospace; display: flex; flex-direction: column; }
+        .cupom-header { text-align: center; border-bottom: 1px dashed #000; padding-bottom: 10px; margin-bottom: 10px; }
+        .cupom-itens { flex: 1; overflow-y: auto; font-size: 14px; }
+        .cupom-footer { border-top: 1px dashed #000; padding-top: 10px; margin-top: 10px; font-size: 12px; }
 
-        input#barcode {
-            width: 100%;
-            padding: 15px;
-            font-size: 18px;
-            border: 2px solid #ced4da;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
+        /* DIVISÃO DE CONTA E RECEBIMENTO */
+        .area-financeira { background: #eee; padding: 15px; border-radius: 8px; margin-top: 10px; }
+        .total-valor { font-size: 30px; color: #d9534f; font-weight: bold; text-align: right; display: block; }
+        .btn-acao { width: 100%; padding: 12px; margin-top: 10px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .btn-pagar { background: #28a745; color: white; font-size: 18px; }
+        .btn-dividir { background: #ffc107; color: #000; }
 
-        .produto-card {
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-
-        .cupom-section {
-            flex: 1;
-            background-color: #fff;
-            border-left: 2px solid #dee2e6;
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-        }
-
-        .lista-itens { flex: 1; overflow-y: auto; font-family: monospace; }
-
-        .total-valor { font-size: 28px; color: #dc3545; font-weight: bold; text-align: right; }
-
-        /* RODAPÉ DA RÁDIO */
-        .radio-footer {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background: #222;
-            padding: 10px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 15px;
-            z-index: 1000;
-            border-top: 3px solid #007bff;
-        }
-
-        select#estilo {
-            background: #333;
-            color: #007bff;
-            border: 1px solid #007bff;
-            padding: 8px;
-            border-radius: 5px;
-            font-weight: bold;
-        }
-
-        audio { height: 35px; filter: invert(1); }
+        /* RADIO FOOTER */
+        .radio-footer { position: fixed; bottom: 0; width: 100%; background: #1a1a1a; padding: 10px; display: flex; justify-content: center; align-items: center; gap: 10px; }
+        audio { height: 30px; filter: invert(1); }
     </style>
 </head>
 <body>
 
-    <header>
-        <a href="index.html" class="btn-home">🏠 HOME</a>
-        <h2 style="margin:0; font-size: 18px;">BOTECO 934 - BALCÃO</h2>
-        <div style="width: 80px;"></div>
-    </header>
+<header>
+    <a href="index.html" class="btn-home">🏠 HOME</a>
+    <h2 style="margin:0;">BOTECO 934 - GESTÃO DE MESAS</h2>
+    <span>Operador: Edmarques</span>
+</header>
 
-    <div class="main-container">
-        <div class="vendas-section">
-            <input type="text" id="barcode" placeholder="Bipe o código aqui..." autofocus>
-            
-            <div class="produto-card">
-                <div><strong>Cerveja 600ml</strong><br><small>R$ 12,00</small></div>
-                <button style="background:#007bff; color:white; border:none; padding:10px; border-radius:5px; cursor:pointer;">ADD</button>
-            </div>
+<div class="main">
+    <div class="caixa-operacional">
+        <div class="bloco-identificacao">
+            <label><strong>IDENTIFICAÇÃO DO CLIENTE / MESA:</strong></label>
+            <input type="text" id="cliente" placeholder="Nome do cliente ou número da mesa para abrir...">
+            <button class="btn-acao" style="background:#007bff; color:white;" onclick="abrirMesa()">ABRIR MESA / COMANDA</button>
         </div>
 
-        <div class="cupom-section">
-            <h3 style="margin-top:0;">🛒 CUPOM</h3>
-            <div class="lista-itens" id="cupom-itens">
-                </div>
-            <div style="background:#f8f9fa; padding:15px; border-radius:8px;">
-                <span style="font-size:12px;">TOTAL:</span>
-                <span class="total-valor">R$ 0,00</span>
+        <div id="painel-produtos" style="display:none;">
+            <h3>Lançar Itens</h3>
+            <input type="text" id="barcode" placeholder="Bipe o código de barras..." autofocus>
+            <div style="margin-top:20px;">
+                <button onclick="addProduto('Cerveja 600ml', 12)" class="btn-acao" style="background:#f8f9fa; border:1px solid #ccc; width:auto; margin-right:5px;">🍺 Cerveja 600ml</button>
+                <button onclick="addProduto('Dose Cana', 5)" class="btn-acao" style="background:#f8f9fa; border:1px solid #ccc; width:auto;">🥃 Dose Cana</button>
             </div>
-            <button style="background:#28a745; color:white; border:none; width:100%; padding:15px; font-size:18px; font-weight:bold; border-radius:8px; margin-top:15px; cursor:pointer;">FINALIZAR</button>
         </div>
     </div>
 
-   <div class="radio-footer" style="position: fixed; bottom: 0; left: 0; width: 100%; background: #222; padding: 10px; display: flex; justify-content: center; align-items: center; gap: 15px; z-index: 1000; border-top: 3px solid #007bff;">
-    <label style="color:white; font-size:12px; font-weight:bold;">📻 RÁDIO:</label>
-    <select id="estilo" onchange="mudarRadio()" style="background: #333; color: #007bff; border: 1px solid #007bff; padding: 8px; border-radius: 5px; font-weight: bold; cursor: pointer;">
-        <option value="https://antenaone.crossradio.com.br/stream/1/">🎸 Antena 1 (Pop/Rock Internacional)</option>
-        <option value="https://servidor39.brlogic.com:8300/live">🤠 Sertanejo Modão (OK)</option>
-        <option value="https://topfm.crossradio.com.br/topfm_sp/stream/1/">🎤 Pop / Rock Nacional</option>
-        <option value="https://stm1.painelcast.com:7038/;stream">🕺 Flashback Anos 80/90</option>
-    </select>
+    <div class="cupom-container">
+        <div class="cupom-papel">
+            <div class="cupom-header">
+                <strong>BOTECO 934</strong><br>
+                Distribuidora de Bebidas<br>
+                Petrolina - PE<br>
+                <span id="data-cupom"></span>
+            </div>
+            <div class="cupom-itens" id="lista-venda">
+                <p>Aguardando abertura de mesa...</p>
+            </div>
+            <div class="cupom-footer">
+                <p>Cliente: <span id="nome-cliente">---</span></p>
+                <p style="text-align:center;">Obrigado pela preferência!</p>
+            </div>
+        </div>
 
-    <audio id="player" controls style="height: 35px; filter: invert(1);">
-        <source id="link-radio" src="https://antenaone.crossradio.com.br/stream/1/" type="audio/mpeg">
-    </audio>
+        <div class="area-financeira">
+            <span class="total-valor" id="total">R$ 0,00</span>
+            <button class="btn-acao btn-dividir" onclick="dividirConta()">➗ DIVIDIR CONTA</button>
+            <button class="btn-acao btn-pagar">💰 RECEBER PAGAMENTO</button>
+        </div>
+    </div>
+</div>
+
+<div class="radio-footer">
+    <select id="estilo" onchange="mudarRadio()" style="padding:5px; border-radius:5px;">
+        <option value="https://antenaone.crossradio.com.br/stream/1/">🎸 Rock / Pop</option>
+        <option value="https://servidor39.brlogic.com:8300/live">🤠 Sertanejo Modão</option>
+    </select>
+    <audio id="player" controls><source id="src" src="https://antenaone.crossradio.com.br/stream/1/" type="audio/mpeg"></audio>
 </div>
 
 <script>
-    function mudarRadio() {
-        var s = document.getElementById('estilo');
-        var p = document.getElementById('player');
-        var l = document.getElementById('link-radio');
+    let totalGeral = 0;
+
+    function abrirMesa() {
+        const cliente = document.getElementById('cliente').value;
+        if(cliente == "") { alert("Por favor, identifique o cliente ou a mesa!"); return; }
         
-        l.src = s.value;
-        p.load();
+        document.getElementById('nome-cliente').innerText = cliente;
+        document.getElementById('painel-produtos').style.display = 'block';
+        document.getElementById('lista-venda').innerHTML = "<em>Mesa aberta. Lance os produtos.</em>";
+        document.getElementById('data-cupom').innerText = new Date().toLocaleString();
+    }
+
+    function addProduto(nome, preco) {
+        const lista = document.getElementById('lista-venda');
+        if(totalGeral == 0) lista.innerHTML = "";
         
-        // Tenta dar o play automático após trocar (pode ser barrado pelo Chrome)
-        var playPromise = p.play();
-        if (playPromise !== undefined) {
-            playPromise.then(_ => {
-                console.log("Tocando!");
-            }).catch(error => {
-                console.log("Clique no play manualmente");
-            });
+        lista.innerHTML += `<div style="display:flex; justify-content:space-between;">
+            <span>1x ${nome}</span>
+            <span>${preco.toFixed(2)}</span>
+        </div>`;
+        
+        totalGeral += preco;
+        document.getElementById('total').innerText = `R$ ${totalGeral.toFixed(2)}`;
+    }
+
+    function dividirConta() {
+        if(totalGeral == 0) return;
+        const pessoas = prompt("Dividir para quantas pessoas?");
+        if(pessoas > 0) {
+            alert(`Fica R$ ${(totalGeral/pessoas).toFixed(2)} para cada pessoa.`);
         }
     }
-</script>
 
-    <script>
-        function mudarRadio() {
-            var s = document.getElementById('estilo');
-            var p = document.getElementById('player');
-            var l = document.getElementById('link-radio');
-            l.src = s.value;
-            p.load();
-            p.play();
-        }
-        window.onload = () => document.getElementById('barcode').focus();
-    </script>
+    function mudarRadio() {
+        const s=document.getElementById('estilo'), p=document.getElementById('player'), r=document.getElementById('src');
+        r.src=s.value; p.load(); p.play();
+    }
+</script>
 </body>
 </html>
