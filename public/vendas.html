@@ -122,13 +122,39 @@
             </button>
         </div>
     </div>
-<div style="background: rgba(0,0,0,0.5); padding: 5px; border-radius: 5px; border: 1px solid #ff9800; margin-top: 10px;">
-    <p style="color: #ff9800; font-size: 10px; margin: 0 0 5px 0;">📻 RÁDIO AO VIVO:</p>
-    <audio controls style="height: 30px; width: 100%;">
-        <source src="https://servidor39.brlogic.com:8300/live" type="audio/mpeg">
+<div id="radio-container" style="position: fixed; bottom: 0; left: 0; width: 100%; background: #1a1a1a; border-top: 2px solid #ff9800; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 5px; z-index: 10000; height: 50px; flex-wrap: wrap;">
+    
+    <select id="estilo-musical" onchange="mudarRadio()" style="background: #333; color: white; border: 1px solid #ff9800; border-radius: 5px; padding: 5px; font-size: 12px; cursor: pointer;">
+        <option value="https://antenaone.crossradio.com.br/stream/1/">🎸 Internacional (Rock/Pop)</option>
+        <option value="https://servidor39.brlogic.com:8300/live">🤠 Sertanejo (Modão)</option>
+        <option value="https://shaincast.com.br:7052/stream">🕺 Flashback (Anos 80/90)</option>
+        <option value="https://01.mgradio.com.br/8004/stream">🔊 Dance/Mix</option>
+    </select>
+
+    <audio id="player-audio" controls style="height: 30px; width: 220px;">
+        <source id="radio-src" src="https://antenaone.crossradio.com.br/stream/1/" type="audio/mpeg">
     </audio>
 </div>
-    <script>
+
+<script>
+function mudarRadio() {
+    var select = document.getElementById('estilo-musical');
+    var audio = document.getElementById('player-audio');
+    var source = document.getElementById('radio-src');
+
+    // Troca o link da rádio
+    source.src = select.value;
+    
+    // Recarrega o player com a nova rádio
+    audio.load();
+    audio.play(); 
+}
+</script>
+
+<style>
+    /* Garante que o sistema de vendas não fique escondido */
+    body { padding-bottom: 70px !important; }
+</style>    <script>
         // Futuro espaço para o seu JavaScript do Firebase e Leitor
         console.log("Sistema Boteco 934 carregado com rádio!");
         
