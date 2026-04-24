@@ -1,36 +1,43 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Boteco 934 - Login</title>
+    <title>Login - Boteco 934</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #121212; color: white; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-        .login-card { background: #1e1e1e; padding: 40px; border-radius: 10px; border: 2px solid #ffc107; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        h1 { color: #ffc107; margin-bottom: 20px; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 5px; border: none; font-size: 16px; text-align: center; }
-        button { background: #ffc107; color: #121212; border: none; padding: 12px 25px; border-radius: 5px; font-weight: bold; cursor: pointer; width: 100%; font-size: 16px; }
+        body { background: #1a1a1a; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; font-family: sans-serif; }
+        .login-card { background: #222; padding: 30px; border-radius: 15px; border: 2px solid #ffc107; text-align: center; width: 300px; }
+        h2 { color: #ffc107; margin-bottom: 20px; }
+        input { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 5px; border: none; font-size: 18px; text-align: center; }
+        button { width: 100%; padding: 12px; background: #ffc107; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 16px; }
         button:hover { background: #e0a800; }
     </style>
 </head>
 <body>
-    <div class="login-card">
-        <h1>🍺 Boteco 934</h1>
-        <p>Acesse o Sistema de Vendas</p>
-        <input type="password" id="senha" placeholder="Digite a senha" onkeypress="if(event.key === 'Enter') validar()">
-        <button onclick="validar()">ENTRAR</button>
-    </div>
 
-    <script>
-        function validar() {
-            const senha = document.getElementById('senha').value;
-            // Usando a senha que você já definiu anteriormente
-            if (senha === 'My-Drop-Site') {
-                window.location.href = 'vendas.html';
-            } else {
-                alert('Senha incorreta!');
-            }
+<div class="login-card">
+    <h2>🍺 Boteco 934</h2>
+    <p>Acesse o Sistema</p>
+    <input type="password" id="senha" placeholder="Digite a Senha">
+    <button onclick="entrar()">ENTRAR</button>
+</div>
+
+<script>
+    function entrar() {
+        const senhaDigitada = document.getElementById('senha').value;
+        // DEFINI A SENHA ABAIXO COMO 1234
+        if (senhaDigitada === '1234') {
+            window.location.href = "vendas.html";
+        } else {
+            alert("Senha Incorreta! Tente 1234");
         }
-    </script>
+    }
+    
+    // Permite entrar apertando a tecla ENTER
+    document.getElementById('senha').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') { entrar(); }
+    });
+</script>
+
 </body>
 </html>
