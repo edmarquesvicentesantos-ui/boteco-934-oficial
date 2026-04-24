@@ -173,16 +173,32 @@
         </div>
     </div>
 
-    <div class="radio-bar">
-        <select id="estilo" onchange="mudarRadio()" style="background:#333; color:white; border:1px solid #007bff; padding:5px; border-radius:5px;">
-            <option value="https://antenaone.crossradio.com.br/stream/1/">🎸 Rock / Pop</option>
-            <option value="https://servidor39.brlogic.com:8300/live">🤠 Sertanejo</option>
-            <option value="https://shaincast.com.br:7052/stream">🕺 Flashback</option>
-        </select>
-        <audio id="player" controls>
-            <source id="src" src="https://antenaone.crossradio.com.br/stream/1/" type="audio/mpeg">
-        </audio>
-    </div>
+<div class="radio-footer" style="position: fixed; bottom: 0; left: 0; width: 100%; background: #1a1a1a; padding: 10px; display: flex; justify-content: center; align-items: center; gap: 15px; z-index: 1000; border-top: 3px solid #007bff;">
+    <label style="color:white; font-size:12px; font-weight:bold;">📻 ESTILO:</label>
+    <select id="estilo" onchange="mudarRadio()" style="background: #333; color: #007bff; border: 1px solid #007bff; padding: 5px; border-radius: 5px; font-weight: bold; cursor: pointer;">
+        <option value="https://stream.zeno.fm/fyn8eh36m98uv">🚀 Rock/Pop No Copyright</option>
+        <option value="https://icecast.walmradio.com:8000/lofi">☕ Lo-Fi Ambiente (Sem Direitos)</option>
+        
+        <option value="https://antenaone.crossradio.com.br/stream/1/">🎸 Rock / Pop (Internacional)</option>
+        <option value="https://servidor39.brlogic.com:8300/live">🤠 Sertanejo (Modão)</option>
+        <option value="https://shaincast.com.br:7052/stream">🕺 Flashback (80s/90s)</option>
+    </select>
+
+    <audio id="player" controls style="height: 30px; filter: invert(1);">
+        <source id="link-radio" src="https://stream.zeno.fm/fyn8eh36m98uv" type="audio/mpeg">
+    </audio>
+</div>
+
+<script>
+    function mudarRadio() {
+        var s = document.getElementById('estilo');
+        var p = document.getElementById('player');
+        var l = document.getElementById('link-radio');
+        l.src = s.value;
+        p.load();
+        p.play();
+    }
+</script>
 
     <script>
         function mudarRadio() {
