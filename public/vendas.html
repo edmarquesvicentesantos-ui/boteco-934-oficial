@@ -1,99 +1,142 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Boteco 934 - PDV Cloud</title>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <title>PDV - Boteco 934</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #121212; color: white; margin: 0; display: flex; height: 100vh; overflow: hidden; }
-        .operacao { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
-        .header-boteco { color: #ffc107; margin-bottom: 20px; text-align: center; }
-        .caixa-input { background: #1e1e1e; padding: 30px; border-radius: 10px; border: 2px solid #ffc107; width: 80%; max-width: 400px; text-align: center; }
-        input { width: 100%; padding: 15px; margin-top: 10px; border-radius: 5px; border: none; font-size: 18px; text-align: center; outline: none; }
-        .cupom-lateral { width: 350px; background-color: white; color: black; display: flex; flex-direction: column; padding: 20px; box-shadow: -5px 0 15px rgba(0,0,0,0.5); }
-        .cupom-header { text-align: center; border-bottom: 2px dashed #ccc; padding-bottom: 10px; margin-bottom: 10px; }
-        .lista-itens { flex: 1; overflow-y: auto; font-family: monospace; font-size: 14px; }
-        .item-linha { display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding: 5px 0; }
-        .cupom-footer { border-top: 2px dashed #ccc; padding-top: 10px; }
-        .total-cupom { font-size: 28px; font-weight: bold; display: flex; justify-content: space-between; color: #28a745; }
-        .btn-finalizar { background: #28a745; color: white; border: none; padding: 15px; width: 100%; border-radius: 5px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        #radio-container { position: fixed; bottom: 10px; left: 10px; background: #1e1e1e; padding: 8px; border-radius: 8px; border: 1px solid #ffc107; display: flex; align-items: center; gap: 10px; z-index: 100; }
+        /* Estilos para deixar o sistema com cara de aplicativo */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            padding-bottom: 80px; /* Espaço para a rádio não cobrir os botões */
+        }
+
+        header {
+            background-color: #333;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .container {
+            padding: 15px;
+            max-width: 800px;
+            margin: auto;
+        }
+
+        /* Card de Produto que você pediu */
+        .produto-card {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn-venda {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* Layout do Carrinho/Venda lateral que vimos no seu print */
+        #carrinho {
+            background: #fff;
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 8px;
+        }
+
+        .total-destaque {
+            font-size: 1.5em;
+            color: #d9534f;
+            font-weight: bold;
+            text-align: right;
+        }
+
+        /* ESTILO DO PLAYER DE RÁDIO */
+        .radio-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: #222;
+            color: #fff;
+            padding: 12px;
+            text-align: center;
+            z-index: 9999;
+            border-top: 3px solid #ff9800;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.5);
+        }
+
+        audio {
+            height: 35px;
+            width: 80%;
+            max-width: 400px;
+            filter: invert(100%); /* Deixa o player combinando com o tema escuro */
+        }
     </style>
 </head>
 <body>
-    <div class="operacao">
-        <div class="header-boteco"><h1>🍺 BOTECO 934</h1></div>
-        <div class="caixa-input">
-            <label>LEITOR DE BARRAS</label>
-            <input type="text" id="barcode" placeholder="Bipe aqui..." autofocus>
+
+    <header>
+        SISTEMA DE VENDAS - BOTECO 934
+    </header>
+
+    <div class="container">
+        <div style="margin-bottom: 20px;">
+            <input type="text" id="barcode" placeholder="Escaneie o código ou digite..." style="width: 100%; padding: 12px; border-radius: 5px; border: 1px solid #ccc;">
+        </div>
+
+        <div class="produto-card">
+            <div>
+                <strong>Cerveja Gelada (600ml)</strong><br>
+                <span>R$ 12,00</span>
+            </div>
+            <button class="btn-venda">ADICIONAR</button>
+        </div>
+
+        <div id="carrinho">
+            <h3>Cupom Fiscal (Simulação)</h3>
+            <div id="itens-lista">
+                </div>
+            <hr>
+            <div class="total-destaque">
+                TOTAL: R$ 0,00
+            </div>
+            <button style="width: 100%; background: #007bff; color: white; padding: 15px; border: none; border-radius: 5px; margin-top: 10px; font-weight: bold;">
+                FECHAR VENDA E LANÇAR NO FINANCEIRO
+            </button>
         </div>
     </div>
-
-    <div class="cupom-lateral">
-        <div class="cupom-header"><strong>BOTECO 934</strong><br>Cupom de Venda</div>
-        <div class="lista-itens" id="listaItens"></div>
-        <div class="cupom-footer">
-            <div class="total-cupom"><span>TOTAL:</span> <span id="valorTotal">R$ 0,00</span></div>
-            <button class="btn-finalizar" onclick="finalizarVenda()">FECHAR E SALVAR</button>
-        </div>
-    </div>
-
-    <div id="radio-container">
-        <span style="font-size: 10px; color: #ffc107;">📻 RÁDIO:</span>
-        <audio id="radioPlayer" controls style="height: 25px; width: 180px;">
-            <source src="https://stream.zeno.fm/f976z6yv698uv" type="audio/mpeg">
-        </audio>
-    </div>
-
+<div style="background: rgba(0,0,0,0.5); padding: 5px; border-radius: 5px; border: 1px solid #ff9800; margin-top: 10px;">
+    <p style="color: #ff9800; font-size: 10px; margin: 0 0 5px 0;">📻 RÁDIO AO VIVO:</p>
+    <audio controls style="height: 30px; width: 100%;">
+        <source src="https://servidor39.brlogic.com:8300/live" type="audio/mpeg">
+    </audio>
+</div>
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyAxjhZLPeQBqJ18S8m7lagxuvF9LX70Jks",
-            authDomain: "boteco934-afc3f.firebaseapp.com",
-            projectId: "boteco934-afc3f",
-            storageBucket: "boteco934-afc3f.firebasestorage.app",
-            messagingSenderId: "182023728304",
-            appId: "1:182023728304:web:6dd19be36631d1e9f35f75"
+        // Futuro espaço para o seu JavaScript do Firebase e Leitor
+        console.log("Sistema Boteco 934 carregado com rádio!");
+        
+        // Focar no campo de busca automático para agilizar no balcão
+        window.onload = function() {
+            document.getElementById('barcode').focus();
         };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-
-        let carrinho = [];
-        let totalGeral = 0;
-        const inputBarra = document.getElementById('barcode');
-
-        inputBarra.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                adicionarItem("Item de Teste", 10.00);
-                inputBarra.value = '';
-            }
-        });
-
-        function adicionarItem(nome, preco) {
-            carrinho.push({ nome, preco });
-            totalGeral += preco;
-            renderizar();
-        }
-
-        function renderizar() {
-            document.getElementById('listaItens').innerHTML = carrinho.map(i => `
-                <div class="item-linha"><span>1x ${i.nome}</span><span>R$ ${i.preco.toFixed(2)}</span></div>
-            `).join('');
-            document.getElementById('valorTotal').innerText = `R$ ${totalGeral.toFixed(2)}`;
-        }
-
-        async function finalizarVenda() {
-            if (carrinho.length === 0) return;
-            try {
-                await db.collection("vendas").add({ itens: carrinho, total: totalGeral, data: new Date() });
-                alert("Venda salva!");
-                carrinho = []; totalGeral = 0; renderizar();
-            } catch (e) { alert("Erro ao salvar!"); }
-        }
-
-        document.addEventListener('click', () => inputBarra.focus());
-        document.getElementById('radioPlayer').onplay = () => setTimeout(() => inputBarra.focus(), 1000);
     </script>
+
 </body>
 </html>
