@@ -26,7 +26,6 @@
         .vendas { flex: 2; padding: 20px; overflow-y: auto; }
         .cupom { flex: 1; background: white; border-left: 2px solid #ddd; padding: 15px; display: flex; flex-direction: column; }
         
-        /* CAMPO DE MESA */
         .mesa-container { background: white; padding: 15px; border-radius: 10px; margin-bottom: 20px; display: flex; gap: 10px; align-items: center; border: 1px solid #ddd; }
         .mesa-container input { flex: 1; padding: 12px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; }
 
@@ -36,11 +35,15 @@
         .card strong { display: block; font-size: 14px; margin-bottom: 5px; color: #1a1a1a; }
         .card span { color: #28a745; font-weight: bold; font-size: 18px; }
 
+        /* ESTILO DO X VERMELHO */
+        .btn-remover { color: #dc3545; font-weight: bold; cursor: pointer; padding: 0 10px; font-size: 18px; }
+        .btn-remover:hover { color: #a71d2a; }
+
         .total-box { font-size: 35px; font-weight: bold; color: #28a745; text-align: right; margin: 15px 0; }
         .btn-acao { padding: 15px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; color: white; font-size: 16px; width: 100%; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 10px; }
 
         @media print {
-            header, .vendas, .btn-acao, #tela-login { display: none !important; }
+            header, .vendas, .btn-acao, #tela-login, .btn-remover { display: none !important; }
             #sistema { display: block !important; }
             .cupom { border: none; width: 100%; padding: 0; }
         }
@@ -129,14 +132,24 @@
         desenhar();
     }
 
+    // NOVA FUNÇÃO PARA REMOVER ITEM
+    function remover(index) {
+        conta.splice(index, 1);
+        desenhar();
+    }
+
     function desenhar() {
         const l = document.getElementById('lista-itens');
         let total = 0;
-        l.innerHTML = "";
-        conta.forEach((item) => {
+        l.innerHTML = ""; 
+        
+        conta.forEach((item, index) => {
             total += item.p;
-            l.innerHTML += `<div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-                                <span>1x ${item.n}</span>
+            l.innerHTML += `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+                                <div>
+                                    <span class="btn-remover" onclick="remover(${index})">X</span>
+                                    <span>1x ${item.n}</span>
+                                </div>
                                 <span>R$ ${item.p.toFixed(2)}</span>
                             </div>`;
         });
@@ -154,16 +167,4 @@
         msg += "--------------------------\n";
         conta.forEach(i => msg += `• ${i.n}: R$ ${i.p.toFixed(2)}\n`);
         msg += "--------------------------\n";
-        msg += `*TOTAL: R$ ${vendaTotal.toFixed(2)}*`;
-        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
-    }
-
-    function trocar() {
-        const m = document.getElementById('musica').value;
-        const p = document.getElementById('player');
-        const l = document.getElementById('link');
-        l.src = m; p.load(); p.play();
-    }
-</script>
-</body>
-</html>
+        msg += `*TOTAL: R$ ${
