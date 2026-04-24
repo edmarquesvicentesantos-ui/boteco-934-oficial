@@ -3,100 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SISTEMA BOTECO 934</title>
+    <title>PDV - Boteco 934</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f4f4f4;
+            background-color: #f0f2f5;
             display: flex;
             flex-direction: column;
             height: 100vh;
+            overflow: hidden;
         }
 
-        /* Topo do Sistema */
+        /* Topo com Botão Home */
         header {
-            background-color: #222;
+            background-color: #1a1a1a;
             color: white;
-            padding: 15px;
-            text-align: center;
-            font-weight: bold;
-            font-size: 1.2em;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
 
-        .conteudo {
+        .btn-home {
+            background-color: #444;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-home:hover { background-color: #555; }
+
+        /* Corpo Principal Lado a Lado */
+        .main-layout {
+            display: flex;
             flex: 1;
+            overflow: hidden;
+            padding-bottom: 60px; /* Espaço da rádio */
+        }
+
+        /* Lado Esquerdo: Produtos e Busca */
+        .coluna-vendas {
+            flex: 2;
             padding: 20px;
             overflow-y: auto;
-            padding-bottom: 100px; /* Espaço para não cobrir o botão pela rádio */
+            border-right: 1px solid #ddd;
         }
 
-        /* Campo do Leitor */
-        .campo-busca {
-            margin-bottom: 20px;
+        /* Lado Direito: Cupom */
+        .coluna-cupom {
+            flex: 1;
+            background-color: #fff;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: -2px 0 5px rgba(0,0,0,0.05);
         }
 
         input#barcode {
             width: 100%;
             padding: 15px;
-            font-size: 1.1em;
+            margin-bottom: 20px;
+            border: 2px solid #007bff;
             border-radius: 8px;
-            border: 1px solid #ccc;
-            box-sizing: border-box;
+            font-size: 16px;
         }
 
-        /* Card de Produto */
         .produto-card {
             background: white;
             padding: 15px;
-            border-radius: 10px;
+            border-radius: 8px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border: 1px solid #ddd;
+            margin-bottom: 10px;
+        }
+
+        .lista-cupom {
+            flex: 1;
+            border: 1px dashed #ccc;
+            margin: 10px 0;
+            padding: 10px;
+            font-family: monospace;
+            overflow-y: auto;
+            background: #fafafa;
+        }
+
+        .total-container {
+            font-size: 24px;
+            font-weight: bold;
+            color: #d9534f;
+            text-align: right;
             margin-bottom: 15px;
         }
 
-        .btn-add {
+        .btn-fechar {
             background-color: #28a745;
             color: white;
             border: none;
-            padding: 12px 20px;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        /* Cupom e Total */
-        .painel-venda {
-            background: #fff;
-            border: 2px dashed #bbb;
-            padding: 20px;
-            border-radius: 10px;
-        }
-
-        .total {
-            text-align: right;
-            font-size: 2em;
-            color: #d9534f;
-            font-weight: bold;
-            margin: 15px 0;
-        }
-
-        .btn-fechar {
             width: 100%;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            padding: 18px;
-            font-size: 1.2em;
+            padding: 20px;
+            font-size: 18px;
             font-weight: bold;
-            border-radius: 10px;
+            border-radius: 8px;
             cursor: pointer;
         }
 
-        /* BARRA DA RÁDIO (CORTINA) */
+        /* Barra da Rádio */
         .radio-bar {
             position: fixed;
             bottom: 0;
@@ -104,87 +127,73 @@
             width: 100%;
             background: #1a1a1a;
             border-top: 3px solid #007bff;
-            padding: 10px;
+            padding: 8px;
             display: flex;
-            flex-wrap: wrap;
             justify-content: center;
             align-items: center;
             gap: 15px;
-            z-index: 10000;
+            z-index: 1000;
         }
 
-        select#estilo-musical {
-            background: #333;
-            color: #007bff;
-            border: 1px solid #007bff;
-            padding: 8px;
-            border-radius: 5px;
-            font-weight: bold;
-        }
-
-        audio {
-            height: 35px;
-            filter: invert(1); /* Deixa o player claro para o fundo escuro */
-        }
+        audio { height: 30px; filter: invert(1); }
     </style>
 </head>
 <body>
 
-    <header>SISTEMA DE VENDAS - BOTECO 934</header>
+    <header>
+        <a href="index.html" class="btn-home">🏠 HOME</a>
+        <span>BOTECO 934 - PDV</span>
+        <div style="width: 80px;"></div> </header>
 
-    <div class="conteudo">
-        <div class="campo-busca">
-            <input type="text" id="barcode" placeholder="Escaneie o código de barras aqui..." autofocus>
-        </div>
-
-        <div class="produto-card">
-            <div>
-                <strong>Cerveja Gelada (600ml)</strong><br>
-                <span>R$ 12,00</span>
-            </div>
-            <button class="btn-add">ADICIONAR</button>
-        </div>
-
-        <div class="painel-venda">
-            <h3>Cupom de Venda</h3>
-            <div id="lista-itens">
+    <div class="main-layout">
+        <div class="coluna-vendas">
+            <input type="text" id="barcode" placeholder="Bipe o produto ou digite..." autofocus>
+            
+            <div class="produto-card">
+                <div>
+                    <strong>Cerveja Gelada (600ml)</strong><br>
+                    <span>R$ 12,00</span>
                 </div>
-            <div class="total">TOTAL: R$ 0,00</div>
-            <button class="btn-fechar">FECHAR VENDA E LANÇAR</button>
+                <button style="background:#007bff; color:white; border:none; padding:10px; border-radius:5px;">ADD</button>
+            </div>
+            </div>
+
+        <div class="coluna-cupom">
+            <h3 style="margin-top:0;">🛒 Cupom Atual</h3>
+            <div class="lista-cupom" id="itens">
+                <div style="display:flex; justify-content:space-between;">
+                    <span>1x Cerveja 600ml</span>
+                    <span>12,00</span>
+                </div>
+            </div>
+            <div class="total-container">
+                TOTAL: R$ 12,00
+            </div>
+            <button class="btn-fechar">FINALIZAR (F2)</button>
         </div>
     </div>
 
     <div class="radio-bar">
-        <label style="color: white; font-size: 12px; font-weight: bold;">📻 ESTILO:</label>
-        <select id="estilo-musical" onchange="mudarRadio()">
-            <option value="https://antenaone.crossradio.com.br/stream/1/">🎸 Rock / Pop (Internacional)</option>
-            <option value="https://servidor39.brlogic.com:8300/live">🤠 Sertanejo (Modão)</option>
-            <option value="https://shaincast.com.br:7052/stream">🕺 Flashback (80s / 90s)</option>
-            <option value="https://01.mgradio.com.br/8004/stream">🔊 Dance Mix</option>
+        <select id="estilo" onchange="mudarRadio()" style="background:#333; color:white; border:1px solid #007bff; padding:5px; border-radius:5px;">
+            <option value="https://antenaone.crossradio.com.br/stream/1/">🎸 Rock / Pop</option>
+            <option value="https://servidor39.brlogic.com:8300/live">🤠 Sertanejo</option>
+            <option value="https://shaincast.com.br:7052/stream">🕺 Flashback</option>
         </select>
-
-        <audio id="player-audio" controls>
-            <source id="radio-src" src="https://antenaone.crossradio.com.br/stream/1/" type="audio/mpeg">
+        <audio id="player" controls>
+            <source id="src" src="https://antenaone.crossradio.com.br/stream/1/" type="audio/mpeg">
         </audio>
     </div>
 
     <script>
-        // Função para trocar a rádio
         function mudarRadio() {
-            var select = document.getElementById('estilo-musical');
-            var audio = document.getElementById('player-audio');
-            var source = document.getElementById('radio-src');
-
-            source.src = select.value;
-            audio.load();
-            audio.play(); 
+            var s = document.getElementById('estilo');
+            var a = document.getElementById('player');
+            var r = document.getElementById('src');
+            r.src = s.value;
+            a.load();
+            a.play();
         }
-
-        // Focar no leitor sempre que abrir
-        window.onload = function() {
-            document.getElementById('barcode').focus();
-        };
+        window.onload = () => document.getElementById('barcode').focus();
     </script>
-
 </body>
 </html>
