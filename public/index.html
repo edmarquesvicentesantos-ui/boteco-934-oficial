@@ -3,40 +3,131 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Boteco 934</title>
+    <title>PDV - BOTECO 934</title>
     <style>
-        body { background: #1a1a1a; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; font-family: sans-serif; }
-        .login-card { background: #222; padding: 30px; border-radius: 15px; border: 2px solid #ffc107; text-align: center; width: 300px; }
-        h2 { color: #ffc107; margin-bottom: 20px; }
-        input { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 5px; border: none; font-size: 18px; text-align: center; }
-        button { width: 100%; padding: 12px; background: #ffc107; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 16px; }
-        button:hover { background: #e0a800; }
+        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { margin: 0; background: #1a1a1a; color: white; overflow: hidden; }
+        
+        /* TELA DE LOGIN */
+        #tela-login { display: flex; justify-content: center; align-items: center; height: 100vh; flex-direction: column; }
+        .box-login { background: #222; padding: 40px; border-radius: 15px; border: 2px solid #ffc107; text-align: center; box-shadow: 0 0 20px rgba(255,193,7,0.2); }
+        
+        /* TELA DO SISTEMA */
+        #sistema { display: none; flex-direction: column; height: 100vh; background: #f0f2f5; color: #333; }
+        header { background: #1a1a1a; color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #28a745; height: 70px; }
+        
+        /* RÁDIO NO TOPO (SOLUÇÃO) */
+        .radio-topo { display: flex; align-items: center; gap: 10px; background: #333; padding: 5px 15px; border-radius: 30px; }
+        .radio-topo select { background: transparent; color: #28a745; border: none; font-weight: bold; cursor: pointer; outline: none; }
+        .radio-topo audio { height: 30px; width: 180px; filter: invert(1) hue-rotate(90deg); }
+        
+        .conteudo { display: flex; flex: 1; overflow: hidden; }
+        .vendas { flex: 2; padding: 20px; overflow-y: auto; }
+        .cupom { flex: 1; background: white; border-left: 2px solid #ddd; padding: 15px; display: flex; flex-direction: column; box-shadow: -2px 0 5px rgba(0,0,0,0.05); }
+        
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; margin-top: 20px; }
+        .card { background: white; padding: 20px; border-radius: 10px; text-align: center; cursor: pointer; border: 1px solid #ddd; transition: 0.2s; }
+        .card:hover { border-color: #28a745; transform: scale(1.02); }
+        .card strong { display: block; font-size: 14px; margin-bottom: 5px; }
+        .card span { color: #28a745; font-weight: bold; font-size: 18px; }
+
+        .total { font-size: 35px; font-weight: bold; color: #28a745; text-align: right; margin-top: 15px; }
+        input { padding: 12px; border-radius: 5px; border: 1px solid #ccc; font-size: 16px; }
+        button { padding: 12px; border-radius: 5px; border: none; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
 
-<div class="login-card">
-    <h2>🍺 Boteco 934</h2>
-    <p>Acesse o Sistema</p>
-    <input type="password" id="senha" placeholder="Digite a Senha">
-    <button onclick="entrar()">ENTRAR</button>
+<div id="tela-login">
+    <div class="box-login">
+        <h1 style="color:#ffc107; margin:0;">🍺 Boteco 934</h1>
+        <p style="color:#888; margin-bottom:20px;">Acesso ao Balcão</p>
+        <input type="password" id="senha-input" placeholder="Senha (Use 1234)" style="width:100%; margin-bottom:15px; text-align:center;">
+        <button onclick="verificar()" style="width:100%; background:#ffc107; color:black; font-size:16px;">ENTRAR NO SISTEMA</button>
+    </div>
+</div>
+
+<div id="sistema">
+    <header>
+        <div style="display:flex; align-items:center; gap:15px;">
+            <span style="font-weight:bold; color:#ffc107; font-size:20px;">BOTECO 934</span>
+            <div class="radio-topo">
+                <select id="musica" onchange="trocar()">
+                    <option value="https://antenaone.crossradio.com.br/stream/1/">🎸 Rock</option>
+                    <option value="https://servidor39.brlogic.com:8300/live">🤠 Sertanejo</option>
+                </select>
+                <audio id="player" controls><source id="link" src="https://antenaone.crossradio.com.br/stream/1/" type="audio/mpeg"></audio>
+            </div>
+        </div>
+        <button onclick="location.reload()" style="background:#dc3545; color:white;">SAIR</button>
+    </header>
+
+    <div class="conteudo">
+        <div class="vendas">
+            <h3 style="margin-top:0;">Lançar Produtos</h3>
+            <div class="grid">
+                <div class="card" onclick="add('Cerveja 600ml', 12)"><strong>Cerveja 600ml</strong><span>R$ 12,00</span></div>
+                <div class="card" onclick="add('Dose Cana', 5)"><strong>Dose Cana</strong><span>R$ 5,00</span></div>
+                <div class="card" onclick="add('Refrigerante', 6)"><strong>Refrigerante</strong><span>R$ 6,00</span></div>
+                <div class="card" onclick="add('Batata G', 25)"><strong>Batata G</strong><span>R$ 25,00</span></div>
+            </div>
+        </div>
+        <div class="cupom">
+            <h4 style="text-align:center; border-bottom:2px solid #333; padding-bottom:10px;">CUPOM DE VENDA</h4>
+            <div id="lista" style="flex:1; font-family:monospace; padding:10px; overflow-y:auto; line-height:1.5;">
+                <p style="color:#888; text-align:center;">Mesa vazia...</p>
+            </div>
+            <div class="total" id="total-txt">R$ 0,00</div>
+            <button onclick="window.print()" style="margin-top:15px; background:#28a745; color:white; font-size:16px;">🖨️ IMPRIMIR RECIBO</button>
+            <button onclick="enviarZap()" style="margin-top:10px; background:#25D366; color:white; font-size:16px;">📱 WHATSAPP</button>
+        </div>
+    </div>
 </div>
 
 <script>
-    function entrar() {
-        const senhaDigitada = document.getElementById('senha').value;
-        // DEFINI A SENHA ABAIXO COMO 1234
-        if (senhaDigitada === '1234') {
-            window.location.href = "vendas.html";
+    let conta = [];
+    
+    function verificar() {
+        const s = document.getElementById('senha-input').value;
+        if(s === '1234') { // SENHA RESETADA PARA 1234
+            document.getElementById('tela-login').style.display = 'none';
+            document.getElementById('sistema').style.display = 'flex';
         } else {
-            alert("Senha Incorreta! Tente 1234");
+            alert("Senha incorreta! Use a senha: 1234");
         }
     }
-    
-    // Permite entrar apertando a tecla ENTER
-    document.getElementById('senha').addEventListener('keypress', function (e) {
-        if (e.key === 'Enter') { entrar(); }
-    });
+
+    function add(n, p) {
+        conta.push({n, p});
+        desenhar();
+    }
+
+    function desenhar() {
+        const l = document.getElementById('lista');
+        let total = 0;
+        l.innerHTML = "";
+        conta.forEach((item) => {
+            total += item.p;
+            l.innerHTML += `<div style="display:flex; justify-content:space-between;"><span>1x ${item.n}</span><span>R$ ${item.p.toFixed(2)}</span></div>`;
+        });
+        document.getElementById('total-txt').innerText = "R$ " + total.toFixed(2);
+        window.vendaTotal = total;
+    }
+
+    function enviarZap() {
+        if(conta.length === 0) return;
+        let msg = "*BOTECO 934 - RECIBO*\n--------------------\n";
+        conta.forEach(i => msg += `${i.n}: R$ ${i.p.toFixed(2)}\n`);
+        msg += `--------------------\n*TOTAL: R$ ${window.vendaTotal.toFixed(2)}*`;
+        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
+    }
+
+    function trocar() {
+        const m = document.getElementById('musica').value;
+        const p = document.getElementById('player');
+        document.getElementById('link').src = m;
+        p.load(); p.play();
+    }
 </script>
 
 </body>
