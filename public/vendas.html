@@ -2,157 +2,152 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>SISTEMA PDV - BOTECO 934</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BOTECO 934 - PDV OFICIAL</title>
     <style>
-        * { box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
         body { margin: 0; display: flex; flex-direction: column; height: 100vh; background: #f0f2f5; overflow: hidden; }
 
         /* CABEÇALHO */
-        header { background: #1a1a1a; color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #28a745; }
-        .btn-home { background: #444; color: white; text-decoration: none; padding: 8px 15px; border-radius: 4px; font-weight: bold; }
+        header { background: #1a1a1a; color: white; padding: 5px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #28a745; height: 65px; }
+        .btn-home { background: #444; color: white; text-decoration: none; padding: 8px 12px; border-radius: 4px; font-weight: bold; font-size: 13px; }
+        
+        .radio-topo { display: flex; align-items: center; gap: 8px; background: #333; padding: 5px 12px; border-radius: 30px; }
+        .radio-topo audio { height: 25px; width: 150px; filter: invert(1) hue-rotate(90deg); }
 
-        .main { display: flex; flex: 1; overflow: hidden; padding-bottom: 60px; }
+        .main { display: flex; flex: 1; overflow: hidden; }
 
-        /* LADO ESQUERDO: CATEGORIAS E PRODUTOS */
+        /* PRODUTOS */
         .sessao-vendas { flex: 2; padding: 20px; overflow-y: auto; }
-        .caixa-busca { background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .caixa-identificacao { background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .caixa-identificacao input { flex: 1; padding: 12px; border: 1px solid #ccc; border-radius: 5px; }
         
-        .categoria-titulo { border-left: 5px solid #28a745; padding-left: 10px; margin: 20px 0 10px 0; color: #333; font-weight: bold; }
-        .grid-botoes { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
-        
-        .btn-produto { 
-            background: white; border: 1px solid #ddd; padding: 15px; border-radius: 8px; 
-            text-align: center; cursor: pointer; font-weight: bold; transition: 0.2s;
-        }
-        .btn-produto:hover { background: #e8f5e9; border-color: #28a745; }
-        .preco-tag { display: block; color: #28a745; font-size: 18px; margin-top: 5px; }
+        .categoria-titulo { border-left: 5px solid #28a745; padding-left: 10px; margin: 25px 0 10px 0; font-weight: bold; }
+        .grid-produtos { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+        .card-produto { background: white; border: 1px solid #ddd; padding: 15px; border-radius: 10px; text-align: center; cursor: pointer; }
+        .card-produto:hover { border-color: #28a745; }
 
-        /* LADO DIREITO: CUPOM FISCAL */
+        /* CUPOM */
         .coluna-cupom { flex: 1; background: #fff; border-left: 2px solid #ddd; display: flex; flex-direction: column; padding: 15px; }
-        .cupom-papel { 
-            border: 1px solid #ccc; flex: 1; font-family: 'Courier New', monospace; 
-            padding: 15px; overflow-y: auto; background: #fffcf5; box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+        .cupom-papel { border: 1px solid #eee; flex: 1; font-family: 'Courier New', monospace; padding: 15px; overflow-y: auto; background: #fffcf5; }
+        .item-linha { display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px; border-bottom: 1px dashed #ccc; }
+        .btn-apagar { color: #dc3545; font-weight: bold; cursor: pointer; padding: 5px; font-size: 18px; }
+
+        .rodape-total { background: #1a1a1a; color: white; padding: 15px; border-radius: 8px; margin-top: 15px; }
+        .total-valor { font-size: 32px; font-weight: bold; color: #28a745; text-align: right; display: block; }
+        
+        .btn-acao { width: 100%; border: none; padding: 12px; border-radius: 5px; font-weight: bold; cursor: pointer; margin-top: 8px; font-size: 14px; }
+
+        /* CONFIGURAÇÃO DE IMPRESSÃO */
+        @media print {
+            body * { visibility: hidden; }
+            #corpo-cupom, #corpo-cupom * { visibility: visible; }
+            #corpo-cupom { position: absolute; left: 0; top: 0; width: 100%; border: none; }
+            .btn-apagar { display: none; }
         }
-        .item-linha { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; border-bottom: 1px dashed #ddd; padding-bottom: 5px; }
-        .btn-cancelar { color: #dc3545; font-weight: bold; cursor: pointer; padding: 0 10px; font-size: 18px; }
-
-        .rodape-caixa { background: #1a1a1a; color: white; padding: 20px; border-radius: 8px; margin-top: 15px; }
-        .total-valor { font-size: 35px; font-weight: bold; color: #28a745; text-align: right; display: block; }
-
-        /* RÁDIO */
-        .radio-bar { position: fixed; bottom: 0; width: 100%; background: #1a1a1a; padding: 10px; display: flex; justify-content: center; align-items: center; gap: 15px; }
-        audio { height: 30px; filter: invert(1); }
     </style>
 </head>
 <body>
 
 <header>
     <a href="index.html" class="btn-home">🏠 HOME</a>
-    <h2 style="margin:0;">BOTECO 934 - BALCÃO</h2>
-    <div id="info-cliente" style="font-weight:bold;">Mesa: <span id="nome-mesa">Aguardando...</span></div>
+    <div class="radio-topo">
+        <select id="radio-select" onchange="trocarRadio()" style="background:transparent; color:#28a745; border:none; font-size:11px;"><option value="https://servidor39.brlogic.com:8300/live">🤠 Sertanejo</option><option value="https://antenaone.crossradio.com.br/stream/1/">🎸 Rock</option></select>
+        <audio id="player" controls><source id="link-audio" src="https://servidor39.brlogic.com:8300/live" type="audio/mpeg"></audio>
+    </div>
+    <div style="font-size: 11px; text-align: right;">Mesa: <span id="nome-mesa-exibir" style="color:#28a745; font-weight:bold;">---</span></div>
 </header>
 
 <div class="main">
     <div class="sessao-vendas">
-        <div class="caixa-busca">
-            <input type="text" id="identificar" placeholder="Identifique o Cliente ou Mesa..." style="width:70%; padding:12px; border-radius:5px; border:1px solid #ccc;">
-            <button onclick="abrirMesa()" style="width:28%; padding:12px; background:#007bff; color:white; border:none; border-radius:5px; cursor:pointer; font-weight:bold;">ABRIR CONTA</button>
+        <div class="caixa-identificacao">
+            <input type="text" id="input-cliente" placeholder="Nome do Cliente ou Mesa...">
+            <button onclick="abrirVenda()" style="background:#007bff; color:white; border:none; padding:0 20px; border-radius:5px; font-weight:bold; cursor:pointer;">ABRIR</button>
         </div>
-
-        <div id="area-produtos" style="display:none;">
-            <div class="categoria-titulo">🍺 CERVEJAS</div>
-            <div class="grid-botoes">
-                <div class="btn-produto" onclick="lancar('Cerveja Skol 600ml', 12)">SKOL 600ML <span class="preco-tag">12,00</span></div>
-                <div class="btn-produto" onclick="lancar('Cerveja Heineken', 18)">HEINEKEN <span class="preco-tag">18,00</span></div>
-            </div>
-
-            <div class="categoria-titulo">🥤 REFRIGERANTES</div>
-            <div class="grid-botoes">
-                <div class="btn-produto" onclick="lancar('Coca-Cola Lata', 6)">COCA LATA <span class="preco-tag">6,00</span></div>
-                <div class="btn-produto" onclick="lancar('Água Mineral', 3)">ÁGUA <span class="preco-tag">3,00</span></div>
-            </div>
-
-            <div class="categoria-titulo">🍟 PETISCOS</div>
-            <div class="grid-botoes">
-                <div class="btn-produto" onclick="lancar('Batata Frita G', 25)">BATATA FRITA G <span class="preco-tag">25,00</span></div>
-                <div class="btn-produto" onclick="lancar('Dose de Cana', 5)">DOSE CANA <span class="preco-tag">5,00</span></div>
-            </div>
-        </div>
+        <div id="painel-venda" style="display:none;"><div id="lista-categorias"></div></div>
     </div>
 
     <div class="coluna-cupom">
-        <div class="cupom-papel" id="cupom-itens">
-            <div style="text-align:center"><strong>*** BOTECO 934 ***</strong><br>Petrolina - PE</div>
+        <div class="cupom-papel" id="corpo-cupom">
+            <div style="text-align:center; font-weight:bold;">*** BOTECO 934 ***</div>
+            <div style="text-align:center; font-size:12px;">Petrolina - PE</div>
             <hr>
-            <p id="msg-vazio" style="text-align:center; color:#999;">Abra a mesa para começar...</p>
+            <div id="itens-lista"></div>
+            <hr>
+            <div style="display:flex; justify-content:space-between; font-weight:bold;"><span>TOTAL</span><span id="total-no-cupom">R$ 0,00</span></div>
         </div>
 
-        <div class="rodape-caixa">
-            <small>TOTAL DA CONTA</small>
-            <span class="total-valor" id="total-caixa">R$ 0,00</span>
-            <button onclick="dividir()" style="width:100%; margin-top:10px; background:#666; color:white; border:none; padding:10px; border-radius:5px; cursor:pointer;">➗ DIVIDIR CONTA</button>
-            <button style="width:100%; margin-top:10px; background:#28a745; color:white; border:none; padding:15px; border-radius:5px; font-weight:bold; font-size:18px; cursor:pointer;">FECHAR VENDA</button>
+        <div class="rodape-total">
+            <span class="total-valor" id="display-total">R$ 0,00</span>
+            <button class="btn-acao" style="background:#666; color:white;" onclick="dividir()">➗ DIVIDIR CONTA</button>
+            <button class="btn-acao" style="background:#25D366; color:white;" onclick="enviarZap()">📱 WHATSAPP</button>
+            <button class="btn-acao" style="background:#28a745; color:white;" onclick="window.print()">🖨️ IMPRIMIR RECIBO</button>
         </div>
     </div>
 </div>
 
-<div class="radio-bar">
-    <select id="radio-select" onchange="trocar()"><option value="https://servidor39.brlogic.com:8300/live">🤠 Sertanejo</option><option value="https://antenaone.crossradio.com.br/stream/1/">🎸 Rock</option></select>
-    <audio id="player" controls><source id="link" src="https://servidor39.brlogic.com:8300/live" type="audio/mpeg"></audio>
-</div>
-
 <script>
-    let conta = [];
+    const produtos = [
+        { nome: "Cerveja Skol 600ml", preco: 12.00, cat: "CERVEJAS" },
+        { nome: "Cerveja Heineken", preco: 18.00, cat: "CERVEJAS" },
+        { nome: "Coca-Cola Lata", preco: 6.00, cat: "REFRIGERANTES" },
+        { nome: "Batata Frita G", preco: 25.00, cat: "PETISCOS" },
+        { nome: "Dose de Cana", preco: 5.00, cat: "PETISCOS" }
+    ];
 
-    function abrirMesa() {
-        const nome = document.getElementById('identificar').value;
-        if(nome === "") return alert("Identifique a mesa!");
-        document.getElementById('nome-mesa').innerText = nome;
-        document.getElementById('area-produtos').style.display = "block";
-        document.getElementById('msg-vazio').style.display = "none";
+    let v_carrinho = [];
+    let nomeCliente = "";
+
+    function abrirVenda() {
+        nomeCliente = document.getElementById('input-cliente').value;
+        if(!nomeCliente) return alert("Identifique a mesa!");
+        document.getElementById('nome-mesa-exibir').innerText = nomeCliente.toUpperCase();
+        document.getElementById('painel-venda').style.display = "block";
+        renderizarProdutos();
     }
 
-    function lancar(nome, preco) {
-        conta.push({ nome, preco });
-        renderizarCupom();
-    }
-
-    function estornar(index) {
-        conta.splice(index, 1);
-        renderizarCupom();
-    }
-
-    function renderizarCupom() {
-        const papel = document.getElementById('cupom-itens');
-        const totalHtml = document.getElementById('total-caixa');
-        let soma = 0;
-
-        // Limpa a lista antes de desenhar (evita multiplicar)
-        const header = `<div style="text-align:center"><strong>*** BOTECO 934 ***</strong><br>Petrolina - PE</div><hr>`;
-        papel.innerHTML = header;
-
-        conta.forEach((item, index) => {
-            soma += item.preco;
-            papel.innerHTML += `
-                <div class="item-linha">
-                    <span class="btn-cancelar" onclick="estornar(${index})">✘</span>
-                    <span style="flex:1;">1x ${item.nome}</span>
-                    <span>${item.preco.toFixed(2)}</span>
-                </div>`;
+    function renderizarProdutos() {
+        const area = document.getElementById('lista-categorias'); area.innerHTML = "";
+        const categorias = [...new Set(produtos.map(p => p.cat))].sort();
+        categorias.forEach(cat => {
+            area.innerHTML += `<div class="categoria-titulo">${cat}</div><div class="grid-produtos">` + 
+            produtos.filter(p => p.cat === cat).sort((a,b) => a.nome.localeCompare(b.nome)).map(prod => `
+                <div class="card-produto" onclick="adicionarItem('${prod.nome}', ${prod.preco})">
+                    <strong>${prod.nome}</strong><span>R$ ${prod.preco.toFixed(2)}</span>
+                </div>`).join('') + `</div>`;
         });
+    }
 
-        totalHtml.innerText = `R$ ${soma.toFixed(2)}`;
-        window.totalFinal = soma;
+    function adicionarItem(nome, preco) { v_carrinho.push({ nome, preco }); atualizarCupom(); }
+    function removerItem(idx) { v_carrinho.splice(idx, 1); atualizarCupom(); }
+
+    function atualizarCupom() {
+        const listaHtml = document.getElementById('itens-lista');
+        let soma = 0;
+        listaHtml.innerHTML = "";
+        v_carrinho.forEach((item, i) => {
+            soma += item.preco;
+            listaHtml.innerHTML += `<div class="item-linha"><span class="btn-apagar" onclick="removerItem(${i})">✘</span><span style="flex:1;">1x ${item.nome}</span><span>${item.preco.toFixed(2)}</span></div>`;
+        });
+        document.getElementById('display-total').innerText = `R$ ${soma.toFixed(2)}`;
+        document.getElementById('total-no-cupom').innerText = `R$ ${soma.toFixed(2)}`;
+        window.totalGeral = soma;
+    }
+
+    function enviarZap() {
+        if(v_carrinho.length === 0) return;
+        let msg = `*BOTECO 934 - RECIBO*\nCliente: ${nomeCliente}\n--------------------------\n`;
+        v_carrinho.forEach(i => msg += `• ${i.nome}: R$ ${i.preco.toFixed(2)}\n`);
+        msg += `--------------------------\n*TOTAL: R$ ${window.totalGeral.toFixed(2)}*`;
+        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
     }
 
     function dividir() {
-        if(!window.totalFinal || window.totalFinal === 0) return;
-        const qtd = prompt("Dividir por quantas pessoas?");
-        if(qtd > 0) alert("Valor por pessoa: R$ " + (window.totalFinal / qtd).toFixed(2));
+        const p = prompt("Quantas pessoas?");
+        if(p > 0) alert("Total por pessoa: R$ " + (window.totalGeral / p).toFixed(2));
     }
 
-    function trocar() { const s=document.getElementById('radio-select'), p=document.getElementById('player'), l=document.getElementById('link'); l.src=s.value; p.load(); p.play(); }
+    function trocarRadio() { const s=document.getElementById('radio-select'), p=document.getElementById('player'), l=document.getElementById('link-audio'); l.src=s.value; p.load(); p.play(); }
 </script>
-
 </body>
 </html>
