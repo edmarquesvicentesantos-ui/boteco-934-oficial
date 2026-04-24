@@ -8,7 +8,7 @@
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
         body { margin: 0; display: flex; flex-direction: column; height: 100vh; background: #f0f2f5; overflow: hidden; }
 
-        /* CABEÇALHO COM RÁDIO */
+        /* CABEÇALHO COMPACTO COM RÁDIO */
         header { 
             background: #1a1a1a; color: white; padding: 5px 20px; 
             display: flex; justify-content: space-between; align-items: center; 
@@ -22,23 +22,23 @@
 
         .main { display: flex; flex: 1; overflow: hidden; }
 
-        /* PRODUTOS (LADO ESQUERDO) */
+        /* ÁREA DE PRODUTOS */
         .sessao-vendas { flex: 2; padding: 20px; overflow-y: auto; }
-        .caixa-id { background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: flex; gap: 10px; }
+        .caixa-id { background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .caixa-id input { flex: 1; padding: 12px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; }
         
         .categoria-titulo { border-left: 5px solid #28a745; padding-left: 10px; margin: 25px 0 10px 0; font-weight: bold; color: #333; }
-        .grid-produtos { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+        .grid-produtos { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
         
         .card-prod { 
             background: white; border: 1px solid #ddd; padding: 15px; border-radius: 10px; 
             text-align: center; cursor: pointer; transition: 0.2s;
         }
         .card-prod:hover { border-color: #28a745; background: #f9f9f9; }
-        .card-prod strong { display: block; font-size: 14px; color: #1a1a1a; margin-bottom: 5px; }
-        .card-prod span { color: #28a745; font-weight: bold; font-size: 18px; }
+        .card-prod strong { display: block; font-size: 13px; color: #1a1a1a; margin-bottom: 5px; }
+        .card-prod span { color: #28a745; font-weight: bold; font-size: 16px; }
 
-        /* CUPOM (LADO DIREITO) */
+        /* CUPOM FISCAL LADO DIREITO */
         .coluna-cupom { flex: 1; background: #fff; border-left: 2px solid #ddd; display: flex; flex-direction: column; padding: 15px; }
         .cupom-papel { 
             border: 1px solid #eee; flex: 1; font-family: 'Courier New', monospace; 
@@ -48,14 +48,14 @@
         .btn-apagar { color: #dc3545; font-weight: bold; cursor: pointer; padding: 5px; font-size: 18px; margin-right: 10px; }
 
         .rodape-total { background: #1a1a1a; color: white; padding: 15px; border-radius: 8px; margin-top: 15px; }
-        .total-valor { font-size: 32px; font-weight: bold; color: #28a745; text-align: right; display: block; }
+        .total-valor { font-size: 30px; font-weight: bold; color: #28a745; text-align: right; display: block; }
         .btn-comando { width: 100%; border: none; padding: 12px; border-radius: 5px; font-weight: bold; cursor: pointer; margin-top: 8px; font-size: 14px; }
 
-        /* AJUSTE PARA IMPRESSÃO */
+        /* ESTILO PARA IMPRESSÃO */
         @media print {
             body * { visibility: hidden; }
             #corpo-impressao, #corpo-impressao * { visibility: visible; }
-            #corpo-impressao { position: absolute; left: 0; top: 0; width: 100%; }
+            #corpo-impressao { position: absolute; left: 0; top: 0; width: 100%; border: none; }
             .btn-apagar { display: none; }
         }
     </style>
@@ -71,13 +71,13 @@
         </select>
         <audio id="player" controls><source id="src-audio" src="https://servidor39.brlogic.com:8300/live" type="audio/mpeg"></audio>
     </div>
-    <div style="font-size: 11px; text-align: right;">Mesa: <br><span id="txt-mesa" style="color:#28a745; font-weight:bold; font-size:14px;">---</span></div>
+    <div style="font-size: 11px; text-align: right;">Mesa: <br><span id="txt-mesa" style="color:#28a745; font-weight:bold;">---</span></div>
 </header>
 
 <div class="main">
     <div class="sessao-vendas">
         <div class="caixa-id">
-            <input type="text" id="in-cliente" placeholder="Nome do Cliente ou Nº da Mesa...">
+            <input type="text" id="in-cliente" placeholder="Identifique o Cliente/Mesa...">
             <button onclick="iniciar()" style="background:#007bff; color:white; border:none; padding:0 20px; border-radius:5px; font-weight:bold; cursor:pointer;">ABRIR</button>
         </div>
         <div id="grid-area" style="display:none;"></div>
@@ -90,7 +90,7 @@
             <hr>
             <div id="lista-itens-cupom"></div>
             <hr>
-            <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:18px;">
+            <div style="display:flex; justify-content:space-between; font-weight:bold;">
                 <span>TOTAL</span><span id="total-recibo">R$ 0,00</span>
             </div>
         </div>
@@ -151,7 +151,7 @@
     function atualizar() {
         const lista = document.getElementById('lista-itens-cupom');
         let soma = 0;
-        lista.innerHTML = ""; // Limpa para não repetir itens antigos
+        lista.innerHTML = ""; // CORREÇÃO: Limpa antes de preencher
 
         carrinho.forEach((item, i) => {
             soma += item.preco;
