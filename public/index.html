@@ -5,16 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SISTEMA PDV - BOTECO 934</title>
     <style>
-        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
         body { margin: 0; background: #1a1a1a; color: white; overflow: hidden; height: 100vh; }
         
         /* TELA DE LOGIN */
         #tela-login { display: flex; justify-content: center; align-items: center; height: 100vh; flex-direction: column; position: fixed; width: 100%; top: 0; left: 0; z-index: 999; background: #1a1a1a; }
-        .box-login { background: #222; padding: 40px; border-radius: 15px; border: 2px solid #ffc107; text-align: center; box-shadow: 0 0 20px rgba(255,193,7,0.2); }
+        .box-login { background: #222; padding: 40px; border-radius: 15px; border: 2px solid #ffc107; text-align: center; }
         .box-login input { padding: 12px; border-radius: 5px; border: none; width: 100%; text-align: center; font-size: 18px; margin-bottom: 15px; }
         .box-login button { width: 100%; padding: 12px; background: #ffc107; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; }
 
-        /* TELA DO SISTEMA */
+        /* SISTEMA */
         #sistema { display: none; flex-direction: column; height: 100vh; background: #f0f2f5; color: #333; }
         header { background: #1a1a1a; color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #28a745; min-height: 70px; }
         
@@ -26,8 +26,12 @@
         .vendas { flex: 2; padding: 20px; overflow-y: auto; }
         .cupom { flex: 1; background: white; border-left: 2px solid #ddd; padding: 15px; display: flex; flex-direction: column; }
         
+        /* CAMPO DE MESA */
+        .mesa-container { background: white; padding: 15px; border-radius: 10px; margin-bottom: 20px; display: flex; gap: 10px; align-items: center; border: 1px solid #ddd; }
+        .mesa-container input { flex: 1; padding: 12px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; }
+
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; }
-        .card { background: white; padding: 20px; border-radius: 10px; text-align: center; cursor: pointer; border: 1px solid #ddd; transition: 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .card { background: white; padding: 20px; border-radius: 10px; text-align: center; cursor: pointer; border: 1px solid #ddd; transition: 0.2s; }
         .card:hover { border-color: #28a745; transform: translateY(-2px); }
         .card strong { display: block; font-size: 14px; margin-bottom: 5px; color: #1a1a1a; }
         .card span { color: #28a745; font-weight: bold; font-size: 18px; }
@@ -36,10 +40,9 @@
         .btn-acao { padding: 15px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; color: white; font-size: 16px; width: 100%; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 10px; }
 
         @media print {
-            #sistema > header, .vendas, .btn-acao, #tela-login { display: none !important; }
+            header, .vendas, .btn-acao, #tela-login { display: none !important; }
             #sistema { display: block !important; }
-            .cupom { border: none; width: 100%; }
-            #lista-itens { font-size: 12px; }
+            .cupom { border: none; width: 100%; padding: 0; }
         }
     </style>
 </head>
@@ -70,7 +73,10 @@
 
     <div class="conteudo">
         <div class="vendas">
-            <h3 style="margin-top:0;">Lançar Produtos</h3>
+            <div class="mesa-container">
+                <strong>IDENTIFICAR:</strong>
+                <input type="text" id="campo-mesa" placeholder="Nº da Mesa ou Nome do Cliente" oninput="atualizarHeaderCupom()">
+            </div>
             <div class="grid">
                 <div class="card" onclick="add('Cerveja 600ml', 12.00)"><strong>Cerveja 600ml</strong><span>R$ 12,00</span></div>
                 <div class="card" onclick="add('Dose Cana', 5.00)"><strong>Dose Cana</strong><span>R$ 5,00</span></div>
@@ -82,9 +88,15 @@
         </div>
         
         <div class="cupom">
-            <h4 style="text-align:center; margin: 0 0 10px 0;">CUPOM DE VENDA</h4>
-            <div id="lista-itens" style="flex:1; font-family:monospace; border:1px solid #eee; background:#fffcf5; padding:10px; overflow-y:auto; color: #000;">
-                <p style="color:#999; text-align:center;">Selecione os itens...</p>
+            <div id="caixa-imprimir" style="flex:1; border:1px solid #eee; background:#fffcf5; padding:15px; font-family:monospace; overflow-y:auto; color: #000;">
+                <div style="text-align:center; font-weight:bold;">*** BOTECO 934 ***</div>
+                <div id="info-mesa-cupom" style="text-align:center; margin-bottom: 10px;">Mesa: Aguardando...</div>
+                <hr>
+                <div id="lista-itens"></div>
+                <hr>
+                <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:18px;">
+                    <span>TOTAL</span><span id="total-cupom">R$ 0,00</span>
+                </div>
             </div>
             <div class="total-box" id="total-txt">R$ 0,00</div>
             <button class="btn-acao" style="background:#28a745;" onclick="window.print()">🖨️ IMPRIMIR RECIBO</button>
@@ -99,12 +111,17 @@
 
     function verificar() {
         const s = document.getElementById('senha-input').value;
-        if(s === '1234') { // SENHA PADRÃO: 1234
+        if(s === '1234') { 
             document.getElementById('tela-login').style.display = 'none';
             document.getElementById('sistema').style.display = 'flex';
         } else {
             alert("Senha incorreta! Use 1234");
         }
+    }
+
+    function atualizarHeaderCupom() {
+        const m = document.getElementById('campo-mesa').value;
+        document.getElementById('info-mesa-cupom').innerText = m ? "Mesa/Cli: " + m : "Mesa: Aguardando...";
     }
 
     function add(n, p) {
@@ -115,8 +132,7 @@
     function desenhar() {
         const l = document.getElementById('lista-itens');
         let total = 0;
-        l.innerHTML = ""; // Limpa a lista antes de redesenhar para evitar duplicados
-        
+        l.innerHTML = "";
         conta.forEach((item) => {
             total += item.p;
             l.innerHTML += `<div style="display:flex; justify-content:space-between; margin-bottom:5px;">
@@ -124,14 +140,17 @@
                                 <span>R$ ${item.p.toFixed(2)}</span>
                             </div>`;
         });
-        
         vendaTotal = total;
         document.getElementById('total-txt').innerText = "R$ " + total.toFixed(2);
+        document.getElementById('total-cupom').innerText = "R$ " + total.toFixed(2);
     }
 
     function enviarZap() {
+        const mesa = document.getElementById('campo-mesa').value || "Não informada";
         if(conta.length === 0) return alert("Adicione itens primeiro!");
+        
         let msg = "*BOTECO 934 - RECIBO*\n";
+        msg += `*Mesa/Cliente:* ${mesa}\n`;
         msg += "--------------------------\n";
         conta.forEach(i => msg += `• ${i.n}: R$ ${i.p.toFixed(2)}\n`);
         msg += "--------------------------\n";
@@ -143,16 +162,8 @@
         const m = document.getElementById('musica').value;
         const p = document.getElementById('player');
         const l = document.getElementById('link');
-        l.src = m;
-        p.load();
-        p.play();
+        l.src = m; p.load(); p.play();
     }
-    
-    // Atalho para o Enter no Login
-    document.getElementById('senha-input').addEventListener('keypress', function (e) {
-        if (e.key === 'Enter') verificar();
-    });
 </script>
-
 </body>
 </html>
