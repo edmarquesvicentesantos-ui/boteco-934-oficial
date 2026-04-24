@@ -5,18 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PDV - Boteco 934</title>
     <style>
+        * { box-sizing: border-box; }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', Arial, sans-serif;
             margin: 0;
-            padding: 0;
-            background-color: #f0f2f5;
             display: flex;
             flex-direction: column;
             height: 100vh;
+            background-color: #e9ecef;
             overflow: hidden;
         }
 
-        /* Topo com Botão Home */
         header {
             background-color: #1a1a1a;
             color: white;
@@ -24,58 +23,39 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            border-bottom: 3px solid #007bff;
         }
 
         .btn-home {
-            background-color: #444;
+            background-color: #007bff;
             color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 5px;
-            cursor: pointer;
             text-decoration: none;
+            padding: 8px 20px;
+            border-radius: 5px;
             font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 5px;
+            font-size: 14px;
         }
 
-        .btn-home:hover { background-color: #555; }
-
-        /* Corpo Principal Lado a Lado */
-        .main-layout {
+        .main-container {
             display: flex;
             flex: 1;
             overflow: hidden;
-            padding-bottom: 60px; /* Espaço da rádio */
+            padding-bottom: 70px; 
         }
 
-        /* Lado Esquerdo: Produtos e Busca */
-        .coluna-vendas {
+        .vendas-section {
             flex: 2;
             padding: 20px;
             overflow-y: auto;
-            border-right: 1px solid #ddd;
-        }
-
-        /* Lado Direito: Cupom */
-        .coluna-cupom {
-            flex: 1;
-            background-color: #fff;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            box-shadow: -2px 0 5px rgba(0,0,0,0.05);
         }
 
         input#barcode {
             width: 100%;
             padding: 15px;
-            margin-bottom: 20px;
-            border: 2px solid #007bff;
+            font-size: 18px;
+            border: 2px solid #ced4da;
             border-radius: 8px;
-            font-size: 16px;
+            margin-bottom: 20px;
         }
 
         .produto-card {
@@ -85,129 +65,102 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border: 1px solid #ddd;
             margin-bottom: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
 
-        .lista-cupom {
+        .cupom-section {
             flex: 1;
-            border: 1px dashed #ccc;
-            margin: 10px 0;
-            padding: 10px;
-            font-family: monospace;
-            overflow-y: auto;
-            background: #fafafa;
-        }
-
-        .total-container {
-            font-size: 24px;
-            font-weight: bold;
-            color: #d9534f;
-            text-align: right;
-            margin-bottom: 15px;
-        }
-
-        .btn-fechar {
-            background-color: #28a745;
-            color: white;
-            border: none;
-            width: 100%;
+            background-color: #fff;
+            border-left: 2px solid #dee2e6;
+            display: flex;
+            flex-direction: column;
             padding: 20px;
-            font-size: 18px;
-            font-weight: bold;
-            border-radius: 8px;
-            cursor: pointer;
         }
 
-        /* Barra da Rádio */
-        .radio-bar {
+        .lista-itens { flex: 1; overflow-y: auto; font-family: monospace; }
+
+        .total-valor { font-size: 28px; color: #dc3545; font-weight: bold; text-align: right; }
+
+        /* RODAPÉ DA RÁDIO */
+        .radio-footer {
             position: fixed;
             bottom: 0;
             left: 0;
             width: 100%;
-            background: #1a1a1a;
-            border-top: 3px solid #007bff;
-            padding: 8px;
+            background: #222;
+            padding: 10px;
             display: flex;
             justify-content: center;
             align-items: center;
             gap: 15px;
             z-index: 1000;
+            border-top: 3px solid #007bff;
         }
 
-        audio { height: 30px; filter: invert(1); }
+        select#estilo {
+            background: #333;
+            color: #007bff;
+            border: 1px solid #007bff;
+            padding: 8px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        audio { height: 35px; filter: invert(1); }
     </style>
 </head>
 <body>
 
     <header>
         <a href="index.html" class="btn-home">🏠 HOME</a>
-        <span>BOTECO 934 - PDV</span>
-        <div style="width: 80px;"></div> </header>
+        <h2 style="margin:0; font-size: 18px;">BOTECO 934 - BALCÃO</h2>
+        <div style="width: 80px;"></div>
+    </header>
 
-    <div class="main-layout">
-        <div class="coluna-vendas">
-            <input type="text" id="barcode" placeholder="Bipe o produto ou digite..." autofocus>
+    <div class="main-container">
+        <div class="vendas-section">
+            <input type="text" id="barcode" placeholder="Bipe o código aqui..." autofocus>
             
             <div class="produto-card">
-                <div>
-                    <strong>Cerveja Gelada (600ml)</strong><br>
-                    <span>R$ 12,00</span>
-                </div>
-                <button style="background:#007bff; color:white; border:none; padding:10px; border-radius:5px;">ADD</button>
+                <div><strong>Cerveja 600ml</strong><br><small>R$ 12,00</small></div>
+                <button style="background:#007bff; color:white; border:none; padding:10px; border-radius:5px; cursor:pointer;">ADD</button>
             </div>
-            </div>
+        </div>
 
-        <div class="coluna-cupom">
-            <h3 style="margin-top:0;">🛒 Cupom Atual</h3>
-            <div class="lista-cupom" id="itens">
-                <div style="display:flex; justify-content:space-between;">
-                    <span>1x Cerveja 600ml</span>
-                    <span>12,00</span>
+        <div class="cupom-section">
+            <h3 style="margin-top:0;">🛒 CUPOM</h3>
+            <div class="lista-itens" id="cupom-itens">
                 </div>
+            <div style="background:#f8f9fa; padding:15px; border-radius:8px;">
+                <span style="font-size:12px;">TOTAL:</span>
+                <span class="total-valor">R$ 0,00</span>
             </div>
-            <div class="total-container">
-                TOTAL: R$ 12,00
-            </div>
-            <button class="btn-fechar">FINALIZAR (F2)</button>
+            <button style="background:#28a745; color:white; border:none; width:100%; padding:15px; font-size:18px; font-weight:bold; border-radius:8px; margin-top:15px; cursor:pointer;">FINALIZAR</button>
         </div>
     </div>
 
-<div class="radio-footer" style="position: fixed; bottom: 0; left: 0; width: 100%; background: #1a1a1a; padding: 10px; display: flex; justify-content: center; align-items: center; gap: 15px; z-index: 1000; border-top: 3px solid #007bff;">
-    <label style="color:white; font-size:12px; font-weight:bold;">📻 ESTILO:</label>
-    <select id="estilo" onchange="mudarRadio()" style="background: #333; color: #007bff; border: 1px solid #007bff; padding: 5px; border-radius: 5px; font-weight: bold; cursor: pointer;">
-        <option value="https://stream.zeno.fm/fyn8eh36m98uv">🚀 Rock/Pop No Copyright</option>
-        <option value="https://icecast.walmradio.com:8000/lofi">☕ Lo-Fi Ambiente (Sem Direitos)</option>
-        
-        <option value="https://antenaone.crossradio.com.br/stream/1/">🎸 Rock / Pop (Internacional)</option>
-        <option value="https://servidor39.brlogic.com:8300/live">🤠 Sertanejo (Modão)</option>
-        <option value="https://shaincast.com.br:7052/stream">🕺 Flashback (80s/90s)</option>
-    </select>
-
-    <audio id="player" controls style="height: 30px; filter: invert(1);">
-        <source id="link-radio" src="https://stream.zeno.fm/fyn8eh36m98uv" type="audio/mpeg">
-    </audio>
-</div>
-
-<script>
-    function mudarRadio() {
-        var s = document.getElementById('estilo');
-        var p = document.getElementById('player');
-        var l = document.getElementById('link-radio');
-        l.src = s.value;
-        p.load();
-        p.play();
-    }
-</script>
+    <div class="radio-footer">
+        <label style="color:white; font-size:12px;">ESTILO:</label>
+        <select id="estilo" onchange="mudarRadio()">
+            <option value="https://stream.zeno.fm/fyn8eh36m98uv">🚀 Pop Rock (Sem Direitos)</option>
+            <option value="https://nodes.p6stream.com/8130/stream">🎸 Classic Rock Mix</option>
+            <option value="https://icecast.walmradio.com:8000/lofi">☕ Lo-Fi Relax (Sem Direitos)</option>
+            <option value="https://servidor39.brlogic.com:8300/live">🤠 Sertanejo Modão</option>
+        </select>
+        <audio id="player" controls>
+            <source id="link-radio" src="https://stream.zeno.fm/fyn8eh36m98uv" type="audio/mpeg">
+        </audio>
+    </div>
 
     <script>
         function mudarRadio() {
             var s = document.getElementById('estilo');
-            var a = document.getElementById('player');
-            var r = document.getElementById('src');
-            r.src = s.value;
-            a.load();
-            a.play();
+            var p = document.getElementById('player');
+            var l = document.getElementById('link-radio');
+            l.src = s.value;
+            p.load();
+            p.play();
         }
         window.onload = () => document.getElementById('barcode').focus();
     </script>
