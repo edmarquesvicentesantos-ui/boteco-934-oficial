@@ -1,0 +1,36 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boteco 934 - Login</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background-color: #121212; color: white; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .login-card { background: #1e1e1e; padding: 40px; border-radius: 10px; border: 2px solid #ffc107; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        h1 { color: #ffc107; margin-bottom: 20px; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 5px; border: none; font-size: 16px; text-align: center; }
+        button { background: #ffc107; color: #121212; border: none; padding: 12px 25px; border-radius: 5px; font-weight: bold; cursor: pointer; width: 100%; font-size: 16px; }
+        button:hover { background: #e0a800; }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <h1>🍺 Boteco 934</h1>
+        <p>Acesse o Sistema de Vendas</p>
+        <input type="password" id="senha" placeholder="Digite a senha" onkeypress="if(event.key === 'Enter') validar()">
+        <button onclick="validar()">ENTRAR</button>
+    </div>
+
+    <script>
+        function validar() {
+            const senha = document.getElementById('senha').value;
+            // Usando a senha que você já definiu anteriormente
+            if (senha === 'My-Drop-Site') {
+                window.location.href = 'vendas.html';
+            } else {
+                alert('Senha incorreta!');
+            }
+        }
+    </script>
+</body>
+</html>
