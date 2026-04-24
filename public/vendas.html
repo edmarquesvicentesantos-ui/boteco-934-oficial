@@ -3,46 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BOTECO 934 - PDV OFICIAL</title>
+    <title>SISTEMA PDV - BOTECO 934</title>
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
         body { margin: 0; display: flex; flex-direction: column; height: 100vh; background: #f0f2f5; overflow: hidden; }
 
-        /* CABEÇALHO */
-        header { background: #1a1a1a; color: white; padding: 5px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #28a745; height: 65px; }
+        /* CABEÇALHO COM RÁDIO */
+        header { 
+            background: #1a1a1a; color: white; padding: 5px 20px; 
+            display: flex; justify-content: space-between; align-items: center; 
+            border-bottom: 3px solid #28a745; height: 65px;
+        }
         .btn-home { background: #444; color: white; text-decoration: none; padding: 8px 12px; border-radius: 4px; font-weight: bold; font-size: 13px; }
         
         .radio-topo { display: flex; align-items: center; gap: 8px; background: #333; padding: 5px 12px; border-radius: 30px; }
-        .radio-topo audio { height: 25px; width: 150px; filter: invert(1) hue-rotate(90deg); }
+        .radio-topo select { background: transparent; color: #28a745; border: none; font-size: 11px; font-weight: bold; cursor: pointer; outline: none; }
+        .radio-topo audio { height: 25px; width: 160px; filter: invert(1) hue-rotate(90deg); }
 
         .main { display: flex; flex: 1; overflow: hidden; }
 
-        /* PRODUTOS */
+        /* PRODUTOS (LADO ESQUERDO) */
         .sessao-vendas { flex: 2; padding: 20px; overflow-y: auto; }
-        .caixa-identificacao { background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .caixa-identificacao input { flex: 1; padding: 12px; border: 1px solid #ccc; border-radius: 5px; }
+        .caixa-id { background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: flex; gap: 10px; }
+        .caixa-id input { flex: 1; padding: 12px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; }
         
-        .categoria-titulo { border-left: 5px solid #28a745; padding-left: 10px; margin: 25px 0 10px 0; font-weight: bold; }
+        .categoria-titulo { border-left: 5px solid #28a745; padding-left: 10px; margin: 25px 0 10px 0; font-weight: bold; color: #333; }
         .grid-produtos { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
-        .card-produto { background: white; border: 1px solid #ddd; padding: 15px; border-radius: 10px; text-align: center; cursor: pointer; }
-        .card-produto:hover { border-color: #28a745; }
+        
+        .card-prod { 
+            background: white; border: 1px solid #ddd; padding: 15px; border-radius: 10px; 
+            text-align: center; cursor: pointer; transition: 0.2s;
+        }
+        .card-prod:hover { border-color: #28a745; background: #f9f9f9; }
+        .card-prod strong { display: block; font-size: 14px; color: #1a1a1a; margin-bottom: 5px; }
+        .card-prod span { color: #28a745; font-weight: bold; font-size: 18px; }
 
-        /* CUPOM */
+        /* CUPOM (LADO DIREITO) */
         .coluna-cupom { flex: 1; background: #fff; border-left: 2px solid #ddd; display: flex; flex-direction: column; padding: 15px; }
-        .cupom-papel { border: 1px solid #eee; flex: 1; font-family: 'Courier New', monospace; padding: 15px; overflow-y: auto; background: #fffcf5; }
-        .item-linha { display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px; border-bottom: 1px dashed #ccc; }
-        .btn-apagar { color: #dc3545; font-weight: bold; cursor: pointer; padding: 5px; font-size: 18px; }
+        .cupom-papel { 
+            border: 1px solid #eee; flex: 1; font-family: 'Courier New', monospace; 
+            padding: 15px; overflow-y: auto; background: #fffcf5; border-radius: 5px;
+        }
+        .item-linha { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; border-bottom: 1px dashed #ccc; padding-bottom: 5px; }
+        .btn-apagar { color: #dc3545; font-weight: bold; cursor: pointer; padding: 5px; font-size: 18px; margin-right: 10px; }
 
         .rodape-total { background: #1a1a1a; color: white; padding: 15px; border-radius: 8px; margin-top: 15px; }
         .total-valor { font-size: 32px; font-weight: bold; color: #28a745; text-align: right; display: block; }
-        
-        .btn-acao { width: 100%; border: none; padding: 12px; border-radius: 5px; font-weight: bold; cursor: pointer; margin-top: 8px; font-size: 14px; }
+        .btn-comando { width: 100%; border: none; padding: 12px; border-radius: 5px; font-weight: bold; cursor: pointer; margin-top: 8px; font-size: 14px; }
 
-        /* CONFIGURAÇÃO DE IMPRESSÃO */
+        /* AJUSTE PARA IMPRESSÃO */
         @media print {
             body * { visibility: hidden; }
-            #corpo-cupom, #corpo-cupom * { visibility: visible; }
-            #corpo-cupom { position: absolute; left: 0; top: 0; width: 100%; border: none; }
+            #corpo-impressao, #corpo-impressao * { visibility: visible; }
+            #corpo-impressao { position: absolute; left: 0; top: 0; width: 100%; }
             .btn-apagar { display: none; }
         }
     </style>
@@ -52,36 +65,41 @@
 <header>
     <a href="index.html" class="btn-home">🏠 HOME</a>
     <div class="radio-topo">
-        <select id="radio-select" onchange="trocarRadio()" style="background:transparent; color:#28a745; border:none; font-size:11px;"><option value="https://servidor39.brlogic.com:8300/live">🤠 Sertanejo</option><option value="https://antenaone.crossradio.com.br/stream/1/">🎸 Rock</option></select>
-        <audio id="player" controls><source id="link-audio" src="https://servidor39.brlogic.com:8300/live" type="audio/mpeg"></audio>
+        <select id="radio-sel" onchange="mudarMusica()">
+            <option value="https://servidor39.brlogic.com:8300/live">🤠 Sertanejo</option>
+            <option value="https://antenaone.crossradio.com.br/stream/1/">🎸 Rock</option>
+        </select>
+        <audio id="player" controls><source id="src-audio" src="https://servidor39.brlogic.com:8300/live" type="audio/mpeg"></audio>
     </div>
-    <div style="font-size: 11px; text-align: right;">Mesa: <span id="nome-mesa-exibir" style="color:#28a745; font-weight:bold;">---</span></div>
+    <div style="font-size: 11px; text-align: right;">Mesa: <br><span id="txt-mesa" style="color:#28a745; font-weight:bold; font-size:14px;">---</span></div>
 </header>
 
 <div class="main">
     <div class="sessao-vendas">
-        <div class="caixa-identificacao">
-            <input type="text" id="input-cliente" placeholder="Nome do Cliente ou Mesa...">
-            <button onclick="abrirVenda()" style="background:#007bff; color:white; border:none; padding:0 20px; border-radius:5px; font-weight:bold; cursor:pointer;">ABRIR</button>
+        <div class="caixa-id">
+            <input type="text" id="in-cliente" placeholder="Nome do Cliente ou Nº da Mesa...">
+            <button onclick="iniciar()" style="background:#007bff; color:white; border:none; padding:0 20px; border-radius:5px; font-weight:bold; cursor:pointer;">ABRIR</button>
         </div>
-        <div id="painel-venda" style="display:none;"><div id="lista-categorias"></div></div>
+        <div id="grid-area" style="display:none;"></div>
     </div>
 
     <div class="coluna-cupom">
-        <div class="cupom-papel" id="corpo-cupom">
+        <div class="cupom-papel" id="corpo-impressao">
             <div style="text-align:center; font-weight:bold;">*** BOTECO 934 ***</div>
             <div style="text-align:center; font-size:12px;">Petrolina - PE</div>
             <hr>
-            <div id="itens-lista"></div>
+            <div id="lista-itens-cupom"></div>
             <hr>
-            <div style="display:flex; justify-content:space-between; font-weight:bold;"><span>TOTAL</span><span id="total-no-cupom">R$ 0,00</span></div>
+            <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:18px;">
+                <span>TOTAL</span><span id="total-recibo">R$ 0,00</span>
+            </div>
         </div>
 
         <div class="rodape-total">
-            <span class="total-valor" id="display-total">R$ 0,00</span>
-            <button class="btn-acao" style="background:#666; color:white;" onclick="dividir()">➗ DIVIDIR CONTA</button>
-            <button class="btn-acao" style="background:#25D366; color:white;" onclick="enviarZap()">📱 WHATSAPP</button>
-            <button class="btn-acao" style="background:#28a745; color:white;" onclick="window.print()">🖨️ IMPRIMIR RECIBO</button>
+            <span class="total-valor" id="total-tela">R$ 0,00</span>
+            <button class="btn-comando" style="background:#444; color:white;" onclick="dividir()">➗ DIVIDIR CONTA</button>
+            <button class="btn-comando" style="background:#25D366; color:white;" onclick="enviarWhatsApp()">📱 ENVIAR WHATSAPP</button>
+            <button class="btn-comando" style="background:#28a745; color:white;" onclick="window.print()">🖨️ IMPRIMIR RECIBO</button>
         </div>
     </div>
 </div>
@@ -95,59 +113,77 @@
         { nome: "Dose de Cana", preco: 5.00, cat: "PETISCOS" }
     ];
 
-    let v_carrinho = [];
-    let nomeCliente = "";
+    let carrinho = [];
+    let clienteAtivo = "";
 
-    function abrirVenda() {
-        nomeCliente = document.getElementById('input-cliente').value;
-        if(!nomeCliente) return alert("Identifique a mesa!");
-        document.getElementById('nome-mesa-exibir').innerText = nomeCliente.toUpperCase();
-        document.getElementById('painel-venda').style.display = "block";
-        renderizarProdutos();
+    function iniciar() {
+        clienteAtivo = document.getElementById('in-cliente').value;
+        if(!clienteAtivo) return alert("Identifique a mesa primeiro!");
+        document.getElementById('txt-mesa').innerText = clienteAtivo.toUpperCase();
+        document.getElementById('grid-area').style.display = "block";
+        desenharProdutos();
     }
 
-    function renderizarProdutos() {
-        const area = document.getElementById('lista-categorias'); area.innerHTML = "";
+    function desenharProdutos() {
+        const area = document.getElementById('grid-area');
+        area.innerHTML = "";
         const categorias = [...new Set(produtos.map(p => p.cat))].sort();
+
         categorias.forEach(cat => {
             area.innerHTML += `<div class="categoria-titulo">${cat}</div><div class="grid-produtos">` + 
-            produtos.filter(p => p.cat === cat).sort((a,b) => a.nome.localeCompare(b.nome)).map(prod => `
-                <div class="card-produto" onclick="adicionarItem('${prod.nome}', ${prod.preco})">
-                    <strong>${prod.nome}</strong><span>R$ ${prod.preco.toFixed(2)}</span>
+            produtos.filter(p => p.cat === cat).sort((a,b) => a.nome.localeCompare(b.nome)).map(p => `
+                <div class="card-prod" onclick="add('${p.nome}', ${p.preco})">
+                    <strong>${p.nome}</strong><span>R$ ${p.preco.toFixed(2)}</span>
                 </div>`).join('') + `</div>`;
         });
     }
 
-    function adicionarItem(nome, preco) { v_carrinho.push({ nome, preco }); atualizarCupom(); }
-    function removerItem(idx) { v_carrinho.splice(idx, 1); atualizarCupom(); }
-
-    function atualizarCupom() {
-        const listaHtml = document.getElementById('itens-lista');
-        let soma = 0;
-        listaHtml.innerHTML = "";
-        v_carrinho.forEach((item, i) => {
-            soma += item.preco;
-            listaHtml.innerHTML += `<div class="item-linha"><span class="btn-apagar" onclick="removerItem(${i})">✘</span><span style="flex:1;">1x ${item.nome}</span><span>${item.preco.toFixed(2)}</span></div>`;
-        });
-        document.getElementById('display-total').innerText = `R$ ${soma.toFixed(2)}`;
-        document.getElementById('total-no-cupom').innerText = `R$ ${soma.toFixed(2)}`;
-        window.totalGeral = soma;
+    function add(nome, preco) {
+        carrinho.push({ nome, preco });
+        atualizar();
     }
 
-    function enviarZap() {
-        if(v_carrinho.length === 0) return;
-        let msg = `*BOTECO 934 - RECIBO*\nCliente: ${nomeCliente}\n--------------------------\n`;
-        v_carrinho.forEach(i => msg += `• ${i.nome}: R$ ${i.preco.toFixed(2)}\n`);
-        msg += `--------------------------\n*TOTAL: R$ ${window.totalGeral.toFixed(2)}*`;
-        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
+    function tirar(idx) {
+        carrinho.splice(idx, 1);
+        atualizar();
+    }
+
+    function atualizar() {
+        const lista = document.getElementById('lista-itens-cupom');
+        let soma = 0;
+        lista.innerHTML = ""; // Limpa para não repetir itens antigos
+
+        carrinho.forEach((item, i) => {
+            soma += item.preco;
+            lista.innerHTML += `
+                <div class="item-linha">
+                    <span class="btn-apagar" onclick="tirar(${i})">✘</span>
+                    <span style="flex:1;">1x ${item.nome}</span>
+                    <span>${item.preco.toFixed(2)}</span>
+                </div>`;
+        });
+        document.getElementById('total-tela').innerText = `R$ ${soma.toFixed(2)}`;
+        document.getElementById('total-recibo').innerText = `R$ ${soma.toFixed(2)}`;
+        window.totalVenda = soma;
+    }
+
+    function enviarWhatsApp() {
+        if(carrinho.length === 0) return;
+        let texto = `*BOTECO 934 - RECIBO*\nCliente: ${clienteAtivo}\n--------------------------\n`;
+        carrinho.forEach(i => texto += `• ${i.nome}: R$ ${i.preco.toFixed(2)}\n`);
+        texto += `--------------------------\n*TOTAL: R$ ${window.totalVenda.toFixed(2)}*`;
+        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`, '_blank');
     }
 
     function dividir() {
-        const p = prompt("Quantas pessoas?");
-        if(p > 0) alert("Total por pessoa: R$ " + (window.totalGeral / p).toFixed(2));
+        const p = prompt("Dividir para quantas pessoas?");
+        if(p > 0) alert("Fica R$ " + (window.totalVenda / p).toFixed(2) + " por pessoa.");
     }
 
-    function trocarRadio() { const s=document.getElementById('radio-select'), p=document.getElementById('player'), l=document.getElementById('link-audio'); l.src=s.value; p.load(); p.play(); }
+    function mudarMusica() {
+        const s=document.getElementById('radio-sel'), p=document.getElementById('player'), l=document.getElementById('src-audio');
+        l.src=s.value; p.load(); p.play();
+    }
 </script>
 </body>
 </html>
