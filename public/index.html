@@ -96,24 +96,33 @@
             alert("Senha incorreta! Use a senha: 1234");
         }
     }
-
-    function add(n, p) {
-        conta.push({n, p});
-        desenhar();
-    }
-
-    function desenhar() {
-        const l = document.getElementById('lista');
-        let total = 0;
-        l.innerHTML = "";
-        conta.forEach((item) => {
-            total += item.p;
-            l.innerHTML += `<div style="display:flex; justify-content:space-between;"><span>1x ${item.n}</span><span>R$ ${item.p.toFixed(2)}</span></div>`;
+function enviarZap() {
+        if(conta.length === 0) return; // Não envia se a conta estiver vazia
+        
+        let msg = "*BOTECO 934 - RECIBO*\n";
+        msg += "--------------------\n";
+        
+        // Lista cada item no WhatsApp
+        conta.forEach(i => {
+            msg += `• 1x ${i.n}: R$ ${i.p.toFixed(2)}\n`;
         });
-        document.getElementById('total-txt').innerText = "R$ " + total.toFixed(2);
-        window.vendaTotal = total;
+        
+        msg += "--------------------\n";
+        msg += `*TOTAL: R$ ${window.vendaTotal.toFixed(2)}*`;
+        
+        // Abre o WhatsApp com a mensagem pronta
+        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
     }
 
+    // Função para mudar a rádio no topo
+    function trocar() {
+        const m = document.getElementById('musica').value;
+        const p = document.getElementById('player');
+        const l = document.getElementById('link');
+        l.src = m;
+        p.load();
+        p.play();
+    }
     function enviarZap() {
         if(conta.length === 0) return;
         let msg = "*BOTECO 934 - RECIBO*\n--------------------\n";
