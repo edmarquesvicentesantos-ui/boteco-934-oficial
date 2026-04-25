@@ -8,15 +8,15 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
         import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
 
-        // CONFIGURAÇÃO DO SEU FIREBASE (Boteco 934)
+        // CONFIGURAÇÃO DO FIREBASE (Use as suas chaves aqui)
         const firebaseConfig = {
-            apiKey: "AIzaSyDW-YOUR_KEY", 
+            apiKey: "SUA_API_KEY",
             authDomain: "boteco-934.firebaseapp.com",
             databaseURL: "https://boteco-934-default-rtdb.firebaseio.com",
             projectId: "boteco-934",
             storageBucket: "boteco-934.appspot.com",
             messagingSenderId: "107123456789",
-            appId: "1:107123456789:web:your_app_id"
+            appId: "1:107123456789:web:id_do_app"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -29,38 +29,34 @@
                 produto: produto,
                 preco: preco,
                 data: new Date().toLocaleString('pt-BR')
-            }).then(() => {
-                alert(produto + ' registrado com sucesso!');
-            }).catch((error) => {
-                console.error("Erro ao vender: ", error);
-            });
+            }).then(() => alert(produto + ' registrado!'));
         }
     </script>
     <style>
-        body { font-family: sans-serif; text-align: center; background: #f4f4f4; padding: 20px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; }
-        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); cursor: pointer; }
-        .card:active { transform: scale(0.95); }
-        .preco { color: green; font-weight: bold; font-size: 1.2em; }
+        body { font-family: sans-serif; text-align: center; background: #f0f2f5; padding: 20px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 30px; }
+        .card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); cursor: pointer; border: 2px solid transparent; }
+        .card:hover { border-color: #007bff; }
+        .preco { color: #28a745; font-weight: bold; }
+        nav { background: #333; padding: 15px; border-radius: 8px; margin-top: 20px; }
+        nav a { color: white; text-decoration: none; margin: 0 10px; font-weight: bold; }
     </style>
 </head>
 <body>
-    <h1>Boteco 934 - Frente de Caixa</h1>
+    <h1>🍻 Boteco 934 - PDV</h1>
+    
     <div class="grid">
-        <div class="card" onclick="vender('Cerveja Lata', 5.00)">
-            <h3>Cerveja Lata</h3>
-            <p class="preco">R$ 5,00</p>
-        </div>
-        <div class="card" onclick="vender('Refrigerante', 4.50)">
-            <h3>Refrigerante</h3>
-            <p class="preco">R$ 4,50</p>
-        </div>
-        <div class="card" onclick="vender('Dose Cachaça', 3.00)">
-            <h3>Dose Cachaça</h3>
-            <p class="preco">R$ 3,00</p>
-        </div>
+        <div class="card" onclick="vender('Cerveja Lata', 5.00)"><h3>🍺 Cerveja</h3><p class="preco">R$ 5,00</p></div>
+        <div class="card" onclick="vender('Refrigerante', 4.50)"><h3>🥤 Refri</h3><p class="preco">R$ 4,50</p></div>
+        <div class="card" onclick="vender('Dose Cachaça', 3.00)"><h3>🥃 Dose</h3><p class="preco">R$ 3,00</p></div>
+        <div class="card" onclick="vender('Petisco', 15.00)"><h3>🍟 Petisco</h3><p class="preco">R$ 15,00</p></div>
     </div>
-    <br>
-    <a href="vendas.html" style="color: #666;">Ver Histórico de Vendas</a>
+
+    <nav>
+        <a href="vendas.html">📋 Vendas</a>
+        <a href="estoque.html">📦 Estoque</a>
+        <a href="mesas.html">🪑 Mesas</a>
+        <a href="cadastro.html">➕ Cadastrar</a>
+    </nav>
 </body>
 </html>
