@@ -2,9 +2,7 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Mapa de Mesas - Boteco 934</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
+    <title>Mapa de Mesas</title>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
         import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
@@ -13,85 +11,46 @@
             apiKey: "COLE_SUA_CHAVE_AQUI", 
             authDomain: "boteco-934.firebaseapp.com",
             databaseURL: "https://boteco-934-default-rtdb.firebaseio.com",
-            projectId: "boteco-934",
-            storageBucket: "boteco-934.appspot.com",
-            messagingSenderId: "107123456789",
-            appId: "1:107123456789:web:id_do_app"
+            projectId: "boteco-934"
         };
-
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // FUNÇÃO QUE BLOQUEIA AS MESAS AUTOMATICAMENTE
-        function monitorarMesas() {
-            const mesasRef = ref(db, 'mesas_ativas/');
-            
-            onValue(mesasRef, (snapshot) => {
-                const dados = snapshot.val();
-                
-                // Primeiro, coloca todas as mesas como LIVRES (Verdes)
-                for (let i = 1; i <= 10; i++) {
-                    const btn = document.getElementById('mesa-' + i);
-                    if (btn) {
-                        btn.style.background = "#28a745";
-                        btn.innerHTML = `Mesa ${i < 10 ? '0' + i : i} <br> <small>LIVRE</small>`;
-                        btn.onclick = () => irParaPDV(i);
-                    }
+        onValue(ref(db, 'mesas_ativas/'), (snapshot) => {
+            const ocupadas = snapshot.val() || {};
+            for (let i = 1; i <= 10; i++) {
+                const nome = "Mesa " + i;
+                const btn = document.getElementById('m' + i);
+                if (ocupadas[nome]) {
+                    btn.style.background = "red";
+                    btn.innerHTML = nome + "<br>OCUPADA";
+                    btn.onclick = () => alert("Mesa ocupada!");
+                } else {
+                    btn.style.background = "green";
+                    btn.innerHTML = nome + "<br>LIVRE";
+                    btn.onclick = () => { location.href = 'index.html'; };
                 }
-
-                // Agora, marca as que estão OCUPADAS no Firebase
-                if (dados) {
-                    Object.keys(dados).forEach(nomeMesa => {
-                        // Se o nome for "Mesa 1", "Mesa 2", etc.
-                        const numero = nomeMesa.replace('Mesa ', '');
-                        const btnOcupado = document.getElementById('mesa-' + parseInt(numero));
-                        
-                        if (btnOcupado) {
-                            btnOcupado.style.background = "#d32f2f"; // Vermelho
-                            btnOcupado.innerHTML = `Mesa ${numero} <br> <small>OCUPADA</small>`;
-                            btnOcupado.onclick = () => alert("⚠️ Esta mesa está ocupada! Finalize o pagamento no PDV.");
-                        }
-                    });
-                }
-            });
-        }
-
-        function irParaPDV(numero) {
-            // Leva o número da mesa para o PDV automaticamente
-            localStorage.setItem('mesa_selecionada', "Mesa " + numero);
-            location.href = 'index.html';
-        }
-
-        window.onload = monitorarMesas;
+            }
+        });
     </script>
-
     <style>
-        body { font-family: sans-serif; background: #f4f7f6; padding: 20px; }
-        .grid-mesas { display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px; margin-top: 20px; }
-        .mesa-btn { 
-            padding: 25px 10px; border: none; border-radius: 10px; color: white; 
-            font-weight: bold; cursor: pointer; text-align: center; transition: 0.3s;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        .mesa-btn small { font-weight: normal; font-size: 11px; }
+        .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; padding: 20px; }
+        .mesa { padding: 30px; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
-    <button onclick="location.href='index.html'" style="padding:10px; cursor:pointer;">← Voltar ao PDV</button>
     <h1>Mapa de Mesas - Boteco 934</h1>
-    <p>As mesas ficam vermelhas automaticamente quando alguém consome.</p>
-
-    <div class="grid-mesas">
-        <button id="mesa-1" class="mesa-btn">Mesa 01</button>
-        <button id="mesa-2" class="mesa-btn">Mesa 02</button>
-        <button id="mesa-3" class="mesa-btn">Mesa 03</button>
-        <button id="mesa-4" class="mesa-btn">Mesa 04</button>
-        <button id="mesa-5" class="mesa-btn">Mesa 05</button>
-        <button id="mesa-6" class="mesa-btn">Mesa 06</button>
-        <button id="mesa-7" class="mesa-btn">Mesa 07</button>
-        <button id="mesa-8" class="mesa-btn">Mesa 08</button>
-        <button id="mesa-9" class="mesa-btn">Mesa 09</button>
-        <button id="mesa-10" class="mesa-btn">Mesa 10</button>
+    <div class="grid">
+        <button id="m1" class="mesa">Mesa 1</button>
+        <button id="m2" class="mesa">Mesa 2</button>
+        <button id="m3" class="mesa">Mesa 3</button>
+        <button id="m4" class="mesa">Mesa 4</button>
+        <button id="m5" class="mesa">Mesa 5</button>
+        <button id="m6" class="mesa">Mesa 6</button>
+        <button id="m7" class="mesa">Mesa 7</button>
+        <button id="m8" class="mesa">Mesa 8</button>
+        <button id="m9" class="mesa">Mesa 9</button>
+        <button id="m10" class="mesa">Mesa 10</button>
     </div>
 </body>
 </html>
