@@ -167,4 +167,16 @@
         msg += "--------------------------\n";
         conta.forEach(i => msg += `• ${i.n}: R$ ${i.p.toFixed(2)}\n`);
         msg += "--------------------------\n";
-        msg += `*TOTAL: R$ ${
+        msg += `*TOTAL: R$ ${vendaTotal.toFixed(2)}*`;
+        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
+    }
+
+    function trocar() {
+        const m = document.getElementById('musica').value;
+        const p = document.getElementById('player');
+        const l = document.getElementById('link');
+        l.src = m; p.load(); p.play();
+    }
+</script>
+</body>
+</html>
