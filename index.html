@@ -3,14 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Boteco 934 - PDV</title>
+    <title>BOTECO 934 - PDV Integrado</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
     <script type="module">
+        // --- CÓDIGO DO FIREBASE (Nossa "Alma") ---
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
         import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
 
-        // CONFIGURAÇÃO DO FIREBASE (Use as suas chaves aqui)
+        // COLE SUA CONFIGURAÇÃO DO FIREBASE AQUI
         const firebaseConfig = {
-            apiKey: "SUA_API_KEY",
+            apiKey: "SUA_API_KEY_AQUI", // <--- Lembre de colocar a sua!
             authDomain: "boteco-934.firebaseapp.com",
             databaseURL: "https://boteco-934-default-rtdb.firebaseio.com",
             projectId: "boteco-934",
@@ -22,41 +25,193 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        window.vender = function(produto, preco) {
-            const vendasRef = ref(db, 'vendas');
-            const novaVenda = push(vendasRef);
-            set(novaVenda, {
-                produto: produto,
-                preco: preco,
-                data: new Date().toLocaleString('pt-BR')
-            }).then(() => alert(produto + ' registrado!'));
+        // Carrinho local para o Balcão
+        let carrinho = [];
+        let totalVal = 0;
+
+        // Função para adicionar item visualmente no Balcão à direita
+        window.adicionarAoCarrinho = function(produto, preco) {
+            carrinho.push({produto, preco});
+            totalVal += preco;
+            
+            // Atualiza a visualização do balcão (Vamos simplificar por enquanto)
+            const areaComanda = document.getElementById('comanda-itens');
+            // Como é um esqueleto, vou pular a lista de itens e ir direto pro total
+            
+            document.getElementById('resumo-total').innerText = "R$ " + totalVal.toFixed(2);
+            document.getElementById('whatsapp-btn').innerHTML = `<i class="fab fa-whatsapp"></i> Finalizar Pedido (R$ ${totalVal.toFixed(2)})`;
         }
+
+        // Função para Registrar no Banco de Dados (vendas.html vai ler isso)
+        window.finalizarVendaNoFirebase = function(metodoPagamento) {
+            if(totalVal === 0) { alert("O carrinho está vazio!"); return; }
+
+            const vendasRef = ref(db, 'vendas');
+            const novaVendaRef = push(vendasRef);
+            
+            // Registra o total e os itens
+            set(novaVendaRef, {
+                total: totalVal,
+                metodo: metodoPagamento,
+                data: new Date().toLocaleString('pt-BR'),
+                local: 'Balcão',
+                resumo: `${carrinho.length} itens` // Simplificado
+            }).then(() => {
+                alert("Venda registrada com sucesso no Firebase!");
+                limparComanda(); // Função para limpar o carrinho local
+            }).catch((error) => {
+                console.error("Erro no Firebase: ", error);
+            });
+        }
+
+        window.limparComanda = function() {
+            carrinho = [];
+            totalVal = 0;
+            document.getElementById('resumo-total').innerText = "R$ 0.00";
+            document.getElementById('whatsapp-btn').innerHTML = `<i class="fab fa-whatsapp"></i> FINALIZAR NO FIREBASE`;
+        }
+        // --- FIM DO CÓDIGO DO FIREBASE ---
     </script>
+
     <style>
-        body { font-family: sans-serif; text-align: center; background: #f0f2f5; padding: 20px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 30px; }
-        .card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); cursor: pointer; border: 2px solid transparent; }
-        .card:hover { border-color: #007bff; }
-        .preco { color: #28a745; font-weight: bold; }
-        nav { background: #333; padding: 15px; border-radius: 8px; margin-top: 20px; }
-        nav a { color: white; text-decoration: none; margin: 0 10px; font-weight: bold; }
+        /* CSS para imitar o seu design da imagem_8.png */
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background-color: #f4f7f6; display: flex; flex-direction: column; height: 100vh; }
+        
+        /* Cabeçalho Vermelho */
+        .header { background-color: #d32f2f; color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .header-left h1 { margin: 0; font-size: 24px; font-weight: bold; }
+        .header-left p { margin: 2px 0 0; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
+        .header-right { font-size: 14px; text-align: right; }
+
+        /* Corpo principal em colunas */
+        .main-container { display: flex; flex: 1; overflow: hidden; }
+
+        /* Coluna da Esquerda (Menu e Mesas) */
+        .sidebar { width: 250px; background-color: white; border-right: 1px solid #ddd; padding: 15px; display: flex; flex-direction: column; }
+        .sidebar h3 { font-size: 16px; border-bottom: 2px solid #ddd; padding-bottom: 5px; margin-top: 0; color: #333; }
+        .mesas-lista button { width: 100%; text-align: left; background: none; border: none; padding: 10px; border-radius: 5px; cursor: pointer; color: #d32f2f; margin-bottom: 5px; border-left: 3px solid transparent;}
+        .mesas-lista button.active { background-color: #ffebee; border-left-color: #d32f2f; font-weight: bold; }
+        .sidebar-actions { margin-top: auto; }
+        .btn-side { width: 100%; border: none; padding: 10px; border-radius: 5px; color: white; font-weight: bold; cursor: pointer; margin-top: 8px; display: flex; align-items: center; justify-content: center; }
+        .btn-blue { background-color: #1976d2; }
+        .btn-green { background-color: #388e3c; }
+        .btn-grey { background-color: #757575; }
+        .btn-purple { background-color: #7b1fa2; }
+        .btn-side i { margin-right: 8px; }
+
+        /* Área Central (Produtos) */
+        .content { flex: 1; background-color: white; padding: 20px; border-right: 1px solid #ddd; overflow-y: auto; }
+        .search-bar { width: 100%; padding: 10px; border: 2px solid #d32f2f; border-radius: 20px; font-size: 14px; box-sizing: border-box; margin-bottom: 15px;}
+        .tabs { display: flex; gap: 5px; margin-bottom: 20px; }
+        .tab-btn { flex: 1; background: none; border: 1px solid #ccc; padding: 10px; border-radius: 5px; cursor: pointer; background-color: #f9f9f9; color: #555;}
+        
+        /* Grade de Produtos (Vamos usar cards coloridos baseados no design) */
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
+        .product-card { background: #f9f9f9; border: 1px solid #ddd; border-radius: 8px; padding: 15px; text-align: center; cursor: pointer; transition: 0.2s;}
+        .product-card:hover { transform: translateY(-2px); box-shadow: 0 2px 5px rgba(0,0,0,0.1); border-color: #d32f2f; }
+        .product-price { color: #28a745; font-weight: bold; margin-top: 8px; }
+
+        /* Coluna da Direita (Comanda) */
+        .right-bar { width: 300px; background-color: white; padding: 15px; display: flex; flex-direction: column; }
+        .right-bar h3 { font-size: 18px; margin-top: 0; }
+        .comanda-area { flex: 1; border-top: 1px solid #eee; margin-top: 10px; padding-top: 10px;}
+        .resumo-area { border-top: 2px solid #ddd; margin-top: auto; padding-top: 10px; }
+        .resumo-linha { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 5px; }
+        .total-linha { font-size: 18px; font-weight: bold; color: #d32f2f; margin-top: 10px; border-top: 1px solid #ddd; padding-top: 5px;}
+        
+        /* Botões de Finalização */
+        .action-btns { grid-template-columns: repeat(2, 1fr); gap: 5px; display: grid; margin-top: 15px; }
+        .btn-action { border: none; padding: 10px; border-radius: 5px; color: white; font-weight: bold; cursor: pointer; font-size: 12px; }
+        .btn-action-green { background-color: #4db6ac; } /* PIX */
+        .btn-action-green-dark { background-color: #26a69a; } /* DINHEIRO */
+        .btn-action-blue { background-color: #42a5f5; } /* CARTÃO */
+        .btn-action-dark { background-color: #424242; } /* NOTA */
+        
+        .whatsapp-final-btn { grid-column: span 2; border: none; background-color: #2ecc71; color: white; padding: 12px; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 14px; margin-top: 5px; text-transform: uppercase;}
+        .limpar-btn { grid-column: span 2; background-color: #e0e0e0; border: none; padding: 8px; color: #333; margin-top: 5px; cursor: pointer; border-radius: 5px; text-transform: uppercase; font-size: 10px;}
+
     </style>
 </head>
 <body>
-    <h1>🍻 Boteco 934 - PDV</h1>
-    
-    <div class="grid">
-        <div class="card" onclick="vender('Cerveja Lata', 5.00)"><h3>🍺 Cerveja</h3><p class="preco">R$ 5,00</p></div>
-        <div class="card" onclick="vender('Refrigerante', 4.50)"><h3>🥤 Refri</h3><p class="preco">R$ 4,50</p></div>
-        <div class="card" onclick="vender('Dose Cachaça', 3.00)"><h3>🥃 Dose</h3><p class="preco">R$ 3,00</p></div>
-        <div class="card" onclick="vender('Petisco', 15.00)"><h3>🍟 Petisco</h3><p class="preco">R$ 15,00</p></div>
+
+    <div class="header">
+        <div class="header-left">
+            <h1>BOTECO 934</h1>
+            <p>CONTROLE DE VENDAS</p>
+        </div>
+        <div class="header-right">
+            24/04/2026, 23:39:07 </div>
     </div>
 
-    <nav>
-        <a href="vendas.html">📋 Vendas</a>
-        <a href="estoque.html">📦 Estoque</a>
-        <a href="mesas.html">🪑 Mesas</a>
-        <a href="cadastro.html">➕ Cadastrar</a>
-    </nav>
+    <div class="main-container">
+        
+        <div class="sidebar">
+            <h3><i class="fas fa-network-wired"></i> MESAS</h3>
+            <div class="mesas-lista">
+                <button class="active"><i class="fas fa-beer"></i> Balcão</button>
+            </div>
+
+            <div class="sidebar-actions">
+                <button class="btn-side btn-blue"><i class="fas fa-plus"></i> NOVA MESA</button>
+                <button class="btn-side btn-green"><i class="fas fa-box"></i> ESTOQUE</button>
+                <button class="btn-side btn-grey"><i class="fas fa-upload"></i> EXPORTAR</button>
+                <button class="btn-side btn-purple"><i class="fas fa-file-import"></i> IMPORTAR XML (NF-e)</button>
+            </div>
+        </div>
+
+        <div class="content">
+            <input type="text" class="search-bar" placeholder="🔍 Buscar produto...">
+            <div class="tabs">
+                <button class="tab-btn">Todos</button>
+                <button class="tab-btn">Bebidas</button>
+                <button class="tab-btn">Comidas</button>
+            </div>
+
+            <div class="product-grid">
+                <div class="product-card" onclick="adicionarAoCarrinho('Cerveja Lata', 5.00)">
+                    <h3>🍺 Cerveja</h3>
+                    <p class="product-price">R$ 5.00</p>
+                </div>
+                <div class="product-card" onclick="adicionarAoCarrinho('Coca-Cola', 4.50)">
+                    <h3>🥤 Coca-Cola</h3>
+                    <p class="product-price">R$ 4.50</p>
+                </div>
+                <div class="product-card" onclick="adicionarAoCarrinho('Dose Pitú', 3.00)">
+                    <h3>🥃 Dose Pitú</h3>
+                    <p class="product-price">R$ 3.00</p>
+                </div>
+                <div class="product-card" onclick="adicionarAoCarrinho('Petisco Mix', 15.00)">
+                    <h3>🍟 Petisco Mix</h3>
+                    <p class="product-price">R$ 15.00</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="right-bar">
+            <h3>Balcão</h3>
+            
+            <div class="comanda-area" id="comanda-itens">
+                <p style="color:#999; font-size:12px">Itens adicionados no carrinho local...</p>
+            </div>
+
+            <div class="resumo-area">
+                <div class="resumo-linha"><span>Subtotal</span> <span>R$ 0.00</span></div>
+                <div class="resumo-linha"><span>Taxa (10%)</span> <span>R$ 0.00</span></div>
+                <div class="total-linha"><span>TOTAL</span> <span id="resumo-total">R$ 0.00</span></div>
+                
+                <div class="action-btns">
+                    <button class="btn-action btn-action-green" onclick="finalizarVendaNoFirebase('PIX')">PIX</button>
+                    <button class="btn-action btn-action-green-dark" onclick="finalizarVendaNoFirebase('DINHEIRO')">DINHEIRO</button>
+                    <button class="btn-action btn-action-blue" onclick="finalizarVendaNoFirebase('CARTÃO')">CARTÃO</button>
+                    <button class="btn-action btn-action-dark" onclick="finalizarVendaNoFirebase('NOTA')"><i class="fas fa-ghost"></i> NOTA</button>
+                    
+                    <button class="whatsapp-final-btn" id="whatsapp-btn" onclick="alert('Isso enviaria o pedido para o WhatsApp')"><i class="fab fa-whatsapp"></i> FINALIZAR NO FIREBASE</button>
+                    <button class="limpar-btn" onclick="limparComanda()">LIMPAR COMANDA</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
 </body>
 </html>
