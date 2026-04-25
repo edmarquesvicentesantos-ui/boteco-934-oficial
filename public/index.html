@@ -6,93 +6,62 @@
     <title>SISTEMA PDV - BOTECO 934</title>
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { margin: 0; background: #1a1a1a; color: white; overflow: hidden; height: 100vh; }
+        body { margin: 0; background: #1a1a1a; color: white; height: 100vh; display: flex; flex-direction: column; }
         
-        /* TELA DE LOGIN */
-        #tela-login { display: flex; justify-content: center; align-items: center; height: 100vh; flex-direction: column; position: fixed; width: 100%; top: 0; left: 0; z-index: 999; background: #1a1a1a; }
-        .box-login { background: #222; padding: 40px; border-radius: 15px; border: 2px solid #ffc107; text-align: center; }
-        .box-login input { padding: 12px; border-radius: 5px; border: none; width: 100%; text-align: center; font-size: 18px; margin-bottom: 15px; }
-        .box-login button { width: 100%; padding: 12px; background: #ffc107; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; }
-
-        /* SISTEMA PRINCIPAL */
-        #sistema { display: none; flex-direction: column; height: 100vh; background: #f0f2f5; color: #333; }
-        header { background: #1a1a1a; color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #28a745; min-height: 70px; }
+        header { background: #1a1a1a; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #28a745; }
+        .conteudo { display: flex; flex: 1; overflow: hidden; background: #f0f2f5; color: #333; }
         
-        .conteudo { display: flex; flex: 1; overflow: hidden; }
+        /* GRID DE PRODUTOS */
         .vendas { flex: 2; padding: 20px; overflow-y: auto; }
-        .cupom { flex: 1; background: white; border-left: 2px solid #ddd; padding: 15px; display: flex; flex-direction: column; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; }
+        .card { background: white; padding: 25px 15px; border-radius: 12px; text-align: center; cursor: pointer; border: 1px solid #ddd; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: 0.2s; }
+        .card:active { transform: scale(0.95); }
+        .card strong { display: block; font-size: 16px; margin-bottom: 8px; color: #1a1a1a; }
+        .card span { color: #28a745; font-weight: bold; font-size: 20px; }
+
+        /* CUPOM LATERAL */
+        .cupom { flex: 1; background: white; border-left: 2px solid #ddd; padding: 20px; display: flex; flex-direction: column; }
+        #caixa-itens { flex: 1; overflow-y: auto; font-family: monospace; border: 1px solid #eee; padding: 10px; margin-bottom: 15px; color: #000; }
+        .item-linha { display: flex; justify-content: space-between; margin-bottom: 8px; border-bottom: 1px dashed #eee; padding-bottom: 4px; }
         
-        /* CONTAINER DE IDENTIFICAÇÃO */
-        .mesa-container { background: white; padding: 15px; border-radius: 10px; margin-bottom: 20px; display: flex; gap: 10px; align-items: center; border: 1px solid #ddd; }
-        .mesa-container input { flex: 1; padding: 12px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; }
-
-        /* GRID DE PRODUTOS EM CARDS */
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; }
-        .card { background: white; padding: 20px; border-radius: 10px; text-align: center; cursor: pointer; border: 1px solid #ddd; transition: 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .card:hover { border-color: #28a745; transform: translateY(-2px); }
-        .card strong { display: block; font-size: 14px; margin-bottom: 5px; color: #1a1a1a; }
-        .card span { color: #28a745; font-weight: bold; font-size: 18px; }
-
-        /* ESTILO DO CUPOM E BOTÕES */
-        .btn-remover { color: #dc3545; font-weight: bold; cursor: pointer; padding: 0 10px; font-size: 18px; text-decoration: none; }
-        .total-box { font-size: 35px; font-weight: bold; color: #28a745; text-align: right; margin: 15px 0; }
-        .btn-acao { padding: 15px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; color: white; font-size: 16px; width: 100%; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .total-container { font-size: 40px; font-weight: bold; color: #28a745; text-align: right; margin-bottom: 20px; }
+        .btn { width: 100%; padding: 18px; border-radius: 10px; border: none; color: white; font-weight: bold; font-size: 18px; cursor: pointer; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-remover { color: #dc3545; font-weight: bold; cursor: pointer; margin-right: 10px; }
 
         @media print {
-            header, .vendas, .btn-acao, #tela-login, .btn-remover { display: none !important; }
-            #sistema { display: block !important; }
-            .cupom { border: none; width: 100%; padding: 0; }
-            #caixa-imprimir { border: none !important; }
+            body * { visibility: hidden; }
+            #caixa-itens, #caixa-itens * { visibility: visible; }
+            #caixa-itens { position: absolute; left: 0; top: 0; width: 100%; border: none; }
         }
     </style>
 </head>
 <body>
 
-<div id="tela-login">
-    <div class="box-login">
-        <h1 style="color:#ffc107; margin:0 0 20px 0;">🍺 Boteco 934</h1>
-        <input type="password" id="senha-input" placeholder="SENHA DO SISTEMA">
-        <button onclick="verificar()">ENTRAR NO BALCÃO</button>
+<header>
+    <div style="font-size: 24px; font-weight: bold; color: #ffc107;">BOTECO 934</div>
+    <input type="text" id="identificacao" placeholder="Nº Mesa / Cliente" style="padding: 10px; border-radius: 5px; border: none; width: 250px; font-size: 16px;">
+</header>
+
+<div class="conteudo">
+    <div class="vendas">
+        <div class="grid">
+            <div class="card" onclick="add('Cerveja 600ml', 12.00)"><strong>Cerveja 600ml</strong><span>R$ 12,00</span></div>
+            <div class="card" onclick="add('Dose Cana', 5.00)"><strong>Dose Cana</strong><span>R$ 5,00</span></div>
+            <div class="card" onclick="add('Refrigerante', 6.00)"><strong>Refrigerante</strong><span>R$ 6,00</span></div>
+            <div class="card" onclick="add('Batata G', 25.00)"><strong>Batata G</strong><span>R$ 25,00</span></div>
+            <div class="card" onclick="add('Heineken', 18.00)"><strong>Heineken</strong><span>R$ 18,00</span></div>
+            <div class="card" onclick="add('Água Mineral', 4.00)"><strong>Água Mineral</strong><span>R$ 4,00</span></div>
+        </div>
     </div>
-</div>
 
-<div id="sistema">
-    <header>
-        <span style="font-weight:bold; color:#ffc107; font-size:22px;">BOTECO 934</span>
-        <button onclick="location.reload()" style="background:#dc3545; padding: 8px 15px; border-radius: 5px; border: none; color: white; font-weight: bold; cursor: pointer;">SAIR</button>
-    </header>
-
-    <div class="conteudo">
-        <div class="vendas">
-            <div class="mesa-container">
-                <strong>IDENTIFICAR:</strong>
-                <input type="text" id="campo-mesa" placeholder="Nº da Mesa ou Cliente" oninput="atualizarHeaderCupom()">
-            </div>
-            <div class="grid">
-                <div class="card" onclick="add('Cerveja 600ml', 12.00)"><strong>Cerveja 600ml</strong><span>R$ 12,00</span></div>
-                <div class="card" onclick="add('Dose Cana', 5.00)"><strong>Dose Cana</strong><span>R$ 5,00</span></div>
-                <div class="card" onclick="add('Refrigerante', 6.00)"><strong>Refrigerante</strong><span>R$ 6,00</span></div>
-                <div class="card" onclick="add('Batata G', 25.00)"><strong>Batata G</strong><span>R$ 25,00</span></div>
-                <div class="card" onclick="add('Heineken', 18.00)"><strong>Heineken</strong><span>R$ 18,00</span></div>
-                <div class="card" onclick="add('Água Mineral', 4.00)"><strong>Água Mineral</strong><span>R$ 4,00</span></div>
-            </div>
+    <div class="cupom">
+        <div id="caixa-itens">
+            <div style="text-align: center; font-weight: bold; margin-bottom: 10px;">*** BOTECO 934 ***</div>
+            <div id="lista-venda"></div>
         </div>
-        
-        <div class="cupom">
-            <div id="caixa-imprimir" style="flex:1; border:1px solid #eee; background:#fffcf5; padding:15px; font-family:monospace; overflow-y:auto; color: #000;">
-                <div style="text-align:center; font-weight:bold;">*** BOTECO 934 ***</div>
-                <div id="info-mesa-cupom" style="text-align:center; margin-bottom: 10px;">Mesa: Balcão</div>
-                <hr>
-                <div id="lista-itens"></div>
-                <hr>
-                <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:18px;">
-                    <span>TOTAL</span><span id="total-cupom">R$ 0,00</span>
-                </div>
-            </div>
-            <div class="total-box" id="total-txt">R$ 0,00</div>
-            <button class="btn-acao" style="background:#28a745;" onclick="finalizarVenda()">🖨️ IMPRIMIR E SALVAR</button>
-            <button class="btn-acao" style="background:#25D366;" onclick="enviarZap()">📱 ENVIAR WHATSAPP</button>
-        </div>
+        <div class="total-container" id="total-venda">R$ 0,00</div>
+        <button class="btn" style="background: #28a745;" onclick="finalizar()">🖨️ IMPRIMIR RECIBO</button>
+        <button class="btn" style="background: #25D366;" onclick="enviarZap()">📱 WHATSAPP</button>
     </div>
 </div>
 
@@ -100,88 +69,71 @@
 <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
 
 <script>
-    // ⚠️ SUBSTITUA PELAS CONFIGURAÇÕES QUE ESTÃO NA ENGRENAGEM DO SEU FIREBASE
+    // Configuração oficial do seu projeto boteco-934-77649
     const firebaseConfig = {
-        apiKey: "COLE_AQUI_SUA_API_KEY",
+        apiKey: "AIzaSyBgyomVuXUPtvoeX5C4J2Vna50rUkP4I4w",
         authDomain: "boteco-934-77649.firebaseapp.com",
         databaseURL: "https://boteco-934-77649-default-rtdb.firebaseio.com",
         projectId: "boteco-934-77649",
-        storageBucket: "boteco-934-77649.appspot.com",
-        appId: "COLE_AQUI_SEU_APP_ID"
+        storageBucket: "boteco-934-77649.firebasestorage.app",
+        messagingSenderId: "972553465100",
+        appId: "1:972553465100:web:96d6a3d0199aa1f1d6ed29"
     };
 
-    // Inicializa o Firebase
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let conta = [];
-    let vendaTotal = 0;
+    let carrinho = [];
+    let total = 0;
 
-    function verificar() {
-        if(document.getElementById('senha-input').value === '1234') { 
-            document.getElementById('tela-login').style.display = 'none';
-            document.getElementById('sistema').style.display = 'flex';
-        } else { alert("Senha incorreta!"); }
-    }
-
-    function add(n, p) {
-        conta.push({n, p});
-        desenhar();
+    function add(nome, preco) {
+        carrinho.push({nome, preco});
+        atualizar();
     }
 
     function remover(index) {
-        conta.splice(index, 1);
-        desenhar();
+        carrinho.splice(index, 1);
+        atualizar();
     }
 
-    function desenhar() {
-        const l = document.getElementById('lista-itens');
-        let total = 0;
-        l.innerHTML = ""; // Limpa a lista antes de redesenhar para evitar duplicados
-        
-        conta.forEach((item, index) => {
-            total += item.p;
-            l.innerHTML += `
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
-                    <div><span class="btn-remover" onclick="remover(${index})">X</span> 1x ${item.n}</div>
-                    <span>R$ ${item.p.toFixed(2)}</span>
+    function atualizar() {
+        const lista = document.getElementById('lista-venda');
+        lista.innerHTML = "";
+        total = 0;
+        carrinho.forEach((item, i) => {
+            total += item.preco;
+            lista.innerHTML += `
+                <div class="item-linha">
+                    <span><b class="btn-remover" onclick="remover(${i})">X</b> 1x ${item.nome}</span>
+                    <span>R$ ${item.preco.toFixed(2)}</span>
                 </div>`;
         });
-        vendaTotal = total;
-        document.getElementById('total-txt').innerText = "R$ " + total.toFixed(2);
-        document.getElementById('total-cupom').innerText = "R$ " + total.toFixed(2);
+        document.getElementById('total-venda').innerText = "R$ " + total.toFixed(2);
     }
 
-    function atualizarHeaderCupom() {
-        const m = document.getElementById('campo-mesa').value;
-        document.getElementById('info-mesa-cupom').innerText = m ? "Mesa/Cli: " + m : "Mesa: Balcão";
-    }
-
-    function finalizarVenda() {
-        if(conta.length === 0) return alert("Adicione itens ao cupom!");
-        const mesa = document.getElementById('campo-mesa').value || "Balcão";
+    function finalizar() {
+        if(carrinho.length === 0) return alert("Carrinho vazio!");
+        const mesa = document.getElementById('identificacao').value || "Balcão";
         
-        // SALVA OS DADOS NO FIREBASE REALTIME DATABASE
+        // SALVA NO FIREBASE REALTIME DATABASE
         db.ref('vendas').push({
             identificacao: mesa,
-            produtos: conta,
-            valor_total: vendaTotal,
-            data_hora: new Date().toLocaleString()
+            itens: carrinho,
+            total_venda: total,
+            data: new Date().toLocaleString('pt-BR')
         }).then(() => {
             window.print();
-            conta = [];
-            desenhar();
-            document.getElementById('campo-mesa').value = "";
-        }).catch((erro) => {
-            alert("Erro ao salvar no banco de dados: " + erro.message);
-        });
+            carrinho = [];
+            document.getElementById('identificacao').value = "";
+            atualizar();
+        }).catch(err => alert("Erro ao salvar: " + err.message));
     }
 
     function enviarZap() {
-        const mesa = document.getElementById('campo-mesa').value || "Balcão";
+        const mesa = document.getElementById('identificacao').value || "Balcão";
         let msg = `*BOTECO 934*\n*Mesa:* ${mesa}\n---\n`;
-        conta.forEach(i => msg += `• ${i.n}: R$ ${i.p.toFixed(2)}\n`);
-        msg += `---\n*TOTAL: R$ ${vendaTotal.toFixed(2)}*`;
+        carrinho.forEach(item => msg += `• ${item.nome}: R$ ${item.preco.toFixed(2)}\n`);
+        msg += `---\n*TOTAL: R$ ${total.toFixed(2)}*`;
         window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`);
     }
 </script>
