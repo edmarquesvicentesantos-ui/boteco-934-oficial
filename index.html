@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BOTECO 934 - PDV BLINDADO</title>
+    <title>Boteco 934 - Frente de Caixa</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-        import { getDatabase, ref, push, set, update } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
+        import { getDatabase, ref, push, set, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "COLE_SUA_CHAVE_AQUI", 
@@ -24,168 +24,136 @@
         const db = getDatabase(app);
 
         let totalVenda = 0;
-        let itensCarrinho = [];
+        let itensCarrinho = {}; // Agora usamos um objeto para agrupar por nome
 
-        // Verifica se tem nome para liberar os botões
-        window.validarNome = function() {
+        // Bloqueia itens se não houver nome
+        window.verificarTrava = function() {
             const nome = document.getElementById('nome-cliente').value.trim();
-            const botoes = document.querySelectorAll('.product-card');
-            botoes.forEach(btn => {
-                if(nome.length >= 3) {
-                    btn.style.opacity = "1";
-                    btn.style.pointerEvents = "auto";
-                } else {
-                    btn.style.opacity = "0.4";
-                    btn.style.pointerEvents = "none";
-                }
-            });
+            const cards = document.querySelectorAll('.product-card');
+            
+            if (nome.length >= 3) {
+                // Verifica no Firebase se essa "mesa/cliente" já está ocupada por outro
+                onValue(ref(db, 'mesas_ativas/' + nome), (snapshot) => {
+                    if (snapshot.exists() && snapshot.val().status === "OCUPADA") {
+                        alert("⚠️ Esta mesa/cliente já possui uma comanda aberta!");
+                        document.getElementById('nome-cliente').value = "";
+                    }
+                }, { onlyOnce: true });
+
+                cards.forEach(c => { c.style.opacity = "1"; c.style.pointerEvents = "auto"; });
+            } else {
+                cards.forEach(c => { c.style.opacity = "0.4"; c.style.pointerEvents = "none"; });
+            }
         }
 
         window.adicionarItem = function(nome, preco) {
-            const nomeCliente = document.getElementById('nome-cliente').value.trim();
-            const idUnico = Date.now();
-            itensCarrinho.push({id: idUnico, nome: nome, preco: preco});
+            if (!itensCarrinho[nome]) {
+                itensCarrinho[nome] = { preco: preco, qtd: 1 };
+            } else {
+                itensCarrinho[nome].qtd += 1;
+            }
             totalVenda += preco;
-            
-            // Registra que a mesa/cliente iniciou consumo no Firebase
-            update(ref(db, 'status_mesas/' + nomeCliente), {
-                status: "OCUPADA",
-                ultima_atualizacao: new Date().toLocaleString('pt-BR')
-            });
-
             atualizarVisualBalcao();
         }
 
-        window.removerItem = function(id) {
-            const index = itensCarrinho.findIndex(item => item.id === id);
-            if (index > -1) {
-                totalVenda -= itensCarrinho[index].preco;
-                itensCarrinho.splice(index, 1);
+        window.removerUnidade = function(nome) {
+            if (itensCarrinho[nome]) {
+                totalVenda -= itensCarrinho[nome].preco;
+                itensCarrinho[nome].qtd -= 1;
+                if (itensCarrinho[nome].qtd <= 0) delete itensCarrinho[nome];
                 atualizarVisualBalcao();
             }
         }
 
         function atualizarVisualBalcao() {
-            const areaComanda = document.getElementById('comanda-itens');
-            areaComanda.innerHTML = "";
-            itensCarrinho.forEach((item) => {
-                areaComanda.innerHTML += `
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; padding:8px; background:#fff; border-radius:5px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                        <span style="font-size:13px;">${item.nome}</span>
+            const area = document.getElementById('comanda-itens');
+            area.innerHTML = "";
+            
+            for (let nome in itensCarrinho) {
+                area.innerHTML += `
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding:10px; background:#fff; border-radius:8px; border-left:5px solid #d32f2f; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        <span style="font-weight:bold;">${nome} (x${itensCarrinho[nome].qtd})</span>
                         <div style="display:flex; align-items:center; gap:10px;">
-                            <span style="font-weight:bold;">R$ ${item.preco.toFixed(2)}</span>
-                            <button onclick="removerItem(${item.id})" style="background:none; border:none; color:#d32f2f; cursor:pointer; font-size:18px;">&times;</button>
+                            <span style="color:#28a745; font-weight:bold;">R$ ${(itensCarrinho[nome].preco * itensCarrinho[nome].qtd).toFixed(2)}</span>
+                            <button onclick="removerUnidade('${nome}')" style="background:#ffcdd2; border:none; color:#d32f2f; border-radius:50%; width:28px; height:28px; cursor:pointer; font-weight:bold;">&times;</button>
                         </div>
                     </div>`;
-            });
+            }
             document.getElementById('resumo-total').innerText = "R$ " + totalVenda.toFixed(2);
         }
 
         window.finalizarVenda = function(metodo) {
-            const nomeCliente = document.getElementById('nome-cliente').value.trim();
-            if(totalVenda <= 0) return;
+            const nome = document.getElementById('nome-cliente').value.trim();
+            if (totalVenda <= 0) return;
 
-            const vendasRef = ref(db, 'vendas');
-            set(push(vendasRef), {
-                cliente: nomeCliente,
+            // Salva a venda e LIMPA o status de ocupado
+            const novaVenda = push(ref(db, 'vendas'));
+            set(novaVenda, {
+                cliente: nome,
                 total: totalVenda,
                 metodo: metodo,
-                data: new Date().toLocaleString('pt-BR'),
-                pago: true
+                itens: itensCarrinho,
+                data: new Date().toLocaleString('pt-BR')
             }).then(() => {
-                // Ao pagar, libera o status no Firebase
-                update(ref(db, 'status_mesas/' + nomeCliente), { status: "LIVRE" });
-                alert("✅ Venda Finalizada!");
-                limparTudo();
+                remove(ref(db, 'mesas_ativas/' + nome)); // MESA LIBERADA
+                alert("✅ Venda paga integralmente. Mesa Liberada!");
+                location.reload();
             });
-        }
-
-        window.limparTudo = function() {
-            totalVenda = 0;
-            itensCarrinho = [];
-            document.getElementById('nome-cliente').value = "";
-            document.getElementById('comanda-itens').innerHTML = "";
-            document.getElementById('resumo-total').innerText = "R$ 0.00";
-            validarNome();
-        }
-
-        window.mudarRadio = function(url) {
-            const player = document.getElementById('audio-player');
-            player.src = url;
-            player.play();
         }
     </script>
 
     <style>
-        body { font-family: 'Segoe UI', sans-serif; margin: 0; background-color: #f4f7f6; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-        .header { background-color: #d32f2f; color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; }
-        .main-container { display: flex; flex: 1; overflow: hidden; }
-        .sidebar { width: 200px; background: #fff; border-right: 1px solid #ddd; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
-        .btn-menu { width: 100%; border: none; padding: 12px; border-radius: 6px; color: white; font-weight: bold; cursor: pointer; text-align: left; }
-        .content { flex: 1; padding: 20px; overflow-y: auto; background: #fff; }
-        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; }
-        
-        /* Estudo do Card: Começa bloqueado */
-        .product-card { 
-            background: #fdfdfd; border: 1px solid #eee; border-radius: 10px; padding: 15px; text-align: center; 
-            border-bottom: 4px solid #d32f2f; opacity: 0.4; pointer-events: none; transition: 0.3s;
-        }
-
-        .right-bar { width: 330px; background: #f9f9f9; border-left: 1px solid #ddd; padding: 15px; display: flex; flex-direction: column; }
-        .input-cliente { width: 100%; padding: 12px; border: 2px solid #d32f2f; border-radius: 8px; margin-bottom: 10px; font-weight: bold; }
-        .total-box { border-top: 3px solid #d32f2f; padding-top: 10px; margin-top: auto; }
-        .btn-pag { border: none; padding: 12px; border-radius: 6px; color: white; font-weight: bold; cursor: pointer; margin-top: 5px; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; background: #f4f7f6; }
+        .header { background: #d32f2f; color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .main { display: flex; flex: 1; overflow: hidden; }
+        .sidebar { width: 220px; background: white; border-right: 1px solid #ddd; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+        .product-grid { flex: 1; padding: 20px; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; background: white; overflow-y: auto; }
+        .product-card { background: #fdfdfd; border: 1px solid #eee; border-radius: 12px; padding: 20px; text-align: center; border-bottom: 5px solid #d32f2f; cursor: pointer; transition: 0.3s; pointer-events: none; opacity: 0.4; }
+        .product-card h3 { margin: 10px 0 5px; font-size: 16px; }
+        .product-card b { color: #28a745; font-size: 18px; }
+        .right-bar { width: 350px; background: #f9f9f9; border-left: 1px solid #ddd; padding: 15px; display: flex; flex-direction: column; }
+        .input-nome { width: 100%; padding: 15px; border: 2px solid #d32f2f; border-radius: 10px; margin-bottom: 15px; font-size: 14px; box-sizing: border-box; }
+        .btn-nav { width: 100%; padding: 12px; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; text-align: left; }
     </style>
 </head>
-<body onload="validarNome()">
+<body>
 
     <div class="header">
-        <h1>BOTECO 934</h1>
-        <div style="display:flex; align-items:center; gap:15px;">
-            <select onchange="mudarRadio(this.value)" style="border-radius:15px; padding:5px;">
-                <option value="https://stream.itinerante.com.br/8026/stream">Rádio Rock</option>
-                <option value="https://26623.live.streamtheworld.com/KISS_FM_SP_SC?">Kiss FM</option>
-            </select>
-            <audio id="audio-player" controls style="height:30px; width:40px;"><source src="https://stream.itinerante.com.br/8026/stream"></audio>
-            <div id="relogio"></div>
-        </div>
+        <h2 style="margin:0;">BOTECO 934 - PDV</h2>
+        <div id="relogio"></div>
     </div>
 
-    <div class="main-container">
+    <div class="main">
         <div class="sidebar">
-            <button class="btn-menu" style="background:#1976d2" onclick="location.href='mesas.html'">MESAS</button>
-            <button class="btn-menu" style="background:#388e3c" onclick="location.href='estoque.html'">ESTOQUE</button>
-            <button class="btn-menu" style="background:#7b1fa2" onclick="location.href='vendas.html'">VENDAS</button>
+            <button class="btn-nav" style="background:#1976d2" onclick="location.href='mesas.html'"><i class="fas fa-chair"></i> MESAS</button>
+            <button class="btn-nav" style="background:#388e3c" onclick="location.href='estoque.html'"><i class="fas fa-box"></i> ESTOQUE</button>
+            <button class="btn-nav" style="background:#7b1fa2" onclick="location.href='vendas.html'"><i class="fas fa-chart-line"></i> RELATÓRIOS</button>
         </div>
 
-        <div class="content">
-            <div class="product-grid">
-                <div class="product-card" onclick="adicionarItem('Cerveja Lata', 5.00)"><h3>🍺 Cerveja</h3><b>R$ 5,00</b></div>
-                <div class="product-card" onclick="adicionarItem('Refrigerante', 4.50)"><h3>🥤 Refri</h3><b>R$ 4,50</b></div>
-                <div class="product-card" onclick="adicionarItem('Dose Pitú', 3.00)"><h3>🥃 Pitú</h3><b>R$ 3,00</b></div>
-            </div>
+        <div class="product-grid">
+            <div class="product-card" onclick="adicionarItem('Cerveja Lata', 5.00)"><h3>🍺 Cerveja Lata</h3><b>R$ 5,00</b></div>
+            <div class="product-card" onclick="adicionarItem('Refrigerante', 4.50)"><h3>🥤 Refrigerante</h3><b>R$ 4,50</b></div>
+            <div class="product-card" onclick="adicionarItem('Dose Cachaça', 3.00)"><h3>🥃 Dose Cachaça</h3><b>R$ 3,00</b></div>
         </div>
 
         <div class="right-bar">
-            <input type="text" id="nome-cliente" class="input-cliente" placeholder="NOME DO CLIENTE" onkeyup="validarNome()">
+            <input type="text" id="nome-cliente" class="input-nome" placeholder="NOME DO CLIENTE / MESA" onkeyup="verificarTrava()">
             <div id="comanda-itens" style="flex:1; overflow-y:auto;"></div>
-
-            <div class="total-box">
-                <div style="display:flex; justify-content:space-between; font-size:24px; font-weight:bold; color:#d32f2f;">
+            
+            <div style="border-top:3px solid #d32f2f; padding-top:15px;">
+                <div style="display:flex; justify-content:space-between; font-size:28px; font-weight:bold; color:#d32f2f; margin-bottom:15px;">
                     <span>TOTAL</span> <span id="resumo-total">R$ 0.00</span>
                 </div>
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px;">
-                    <button class="btn-pag" style="background:#4db6ac" onclick="finalizarVenda('PIX')">PIX</button>
-                    <button class="btn-pag" style="background:#26a69a" onclick="finalizarVenda('DINHEIRO')">DINHEIRO</button>
-                    <button class="btn-pag" style="background:#42a5f5" onclick="finalizarVenda('CARTÃO')">CARTÃO</button>
-                    <button class="btn-pag" style="background:#bbb; color:333" onclick="limparTudo()">CANCELAR</button>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+                    <button onclick="finalizarVenda('PIX')" style="background:#4db6ac; color:white; border:none; padding:15px; border-radius:8px; font-weight:bold; cursor:pointer;">PIX</button>
+                    <button onclick="finalizarVenda('DINHEIRO')" style="background:#26a69a; color:white; border:none; padding:15px; border-radius:8px; font-weight:bold; cursor:pointer;">DINHEIRO</button>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        setInterval(() => { document.getElementById('relogio').innerText = new Date().toLocaleTimeString(); }, 1000);
+        setInterval(() => { document.getElementById('relogio').innerText = new Date().toLocaleString(); }, 1000);
     </script>
 </body>
 </html>
