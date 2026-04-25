@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Boteco 934 - Cadastros</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBgyomVuXUPtvoeX5C4J2Vna50rUkP4I4w",
+            authDomain: "boteco-934-77649.firebaseapp.com",
+            projectId: "boteco-934-77649",
+            storageBucket: "boteco-934-77649.firebasestorage.app",
+            messagingSenderId: "972553465100",
+            appId: "1:972553465100:web:96d6a3d0199aa1f1d6ed29"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+    </script>
+    <style>
+        body { font-family: sans-serif; background: #f4f7f6; padding: 20px; text-align: center; }
+        .tabs { display: flex; justify-content: center; margin-bottom: 20px; }
+        .tab-btn { padding: 15px 30px; cursor: pointer; border: none; background: #ddd; font-weight: bold; }
+        .active { background: #3498db; color: white; }
+        .form-container { background: white; padding: 30px; border-radius: 10px; max-width: 400px; margin: auto; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        .btn-salvar { width: 100%; padding: 15px; background: #27ae60; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <a href="index.html" style="text-decoration:none; color:#666;">⬅ Voltar ao Menu</a>
+    <h2>📝 Central de Cadastros</h2>
+
+    <div class="tabs">
+        <button id="btnProd" class="tab-btn active" onclick="switchTab('produtos')">PRODUTOS</button>
+        <button id="btnCli" class="tab-btn" onclick="switchTab('clientes')">CLIENTES (FIADO)</button>
+    </div>
+
+    <div id="tab-produtos" class="form-container">
+        <input type="text" id="p-barcode" placeholder="Bipe o código de barras" autofocus>
+        <input type="text" id="p-nome" placeholder="Nome do Produto">
+        <input type="number" id="p-preco" step="0.01" placeholder="Preço de Venda">
+        <button class="btn-salvar" onclick="salvarProduto()">SALVAR PRODUTO</button>
+    </div>
+
+    <div id="tab-clientes" class="form-container" style="display:none;">
+        <input type="text" id="c-nome" placeholder="Nome Completo do Cliente">
+        <input type="text" id="c-fone" placeholder="WhatsApp (Opcional)">
+        <input type="number" id="c-limite" placeholder="Limite de Fiado (R$)">
+        <button class="btn-salvar" onclick="salvarCliente()">CADASTRAR CLIENTE</button>
+    </div>
+
+    <script>
+        function switchTab(type) {
+            document.getElementById('tab-produtos').style.display = type === 'produtos' ? 'block' : 'none';
+            document.getElementById('tab-clientes').style.display = type === 'clientes' ? 'block' : 'none';
+            document.getElementById('btnProd').className = type === 'produtos' ? 'tab-btn active' : 'tab-btn';
+            document.getElementById('btnCli').className = type === 'clientes' ? 'tab-btn active' : 'tab-btn';
+        }
+
+        function salvarProduto() {
+            const barcode = document.getElementById('p-barcode').value;
+            const nome = document.getElementById('p-nome').value;
+            const preco = parseFloat(document.getElementById('p-preco').value);
+            if(!nome || !preco) return alert("Preencha os campos!");
+
+            db.collection("produtos").add({ codigoBarras: barcode, nome, preco })
+            .then(() => { alert("Produto Salvo!"); location.reload(); });
+        }
+
+        function salvarCliente() {
+            const nome = document.getElementById('c-nome').value;
+            const fone = document.getElementById('c-fone').value;
+            const limite = parseFloat(document.getElementById('c-limite').value) || 0;
+            if(!nome) return alert("Nome do cliente é obrigatório!");
+
+            db.collection("clientes").add({ nome, fone, limite, saldoDevedor: 0 })
+            .then(() => { alert("Cliente Cadastrado!"); location.reload(); });
+        }
+    </script>
+</body>
+</html>
