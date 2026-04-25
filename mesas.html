@@ -2,151 +2,18 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Boteco 934 - Gestão de Mesas</title>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyBgyomVuXUPtvoeX5C4J2Vna50rUkP4I4w",
-            authDomain: "boteco-934-77649.firebaseapp.com",
-            projectId: "boteco-934-77649",
-            storageBucket: "boteco-934-77649.firebasestorage.app",
-            messagingSenderId: "972553465100",
-            appId: "1:972553465100:web:96d6a3d0199aa1f1d6ed29"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-    </script>
+    <title>Boteco 934 - Mesas</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; padding: 20px; }
-        .grid-mesas { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
-        .mesa-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; cursor: pointer; border: 3px solid #27ae60; transition: 0.3s; }
-        .mesa-aberta { border-color: #e74c3c; background: #fff5f5; }
-        .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 25px; box-shadow: 0 0 30px rgba(0,0,0,0.4); border-radius: 15px; z-index: 10; width: 90%; max-width: 450px; }
-        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 5; }
-        .btn { padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin: 5px 0; width: 100%; font-size: 16px; }
-        .btn-blue { background: #3498db; color: white; }
-        .btn-green { background: #27ae60; color: white; }
-        .btn-red { background: #e74c3c; color: white; }
-        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
-        .barcode-input { background: #e8f0fe; border: 2px solid #3498db; font-weight: bold; }
+        .mesa { width: 80px; height: 80px; background: #28a745; color: white; display: inline-flex; align-items: center; justify-content: center; margin: 10px; border-radius: 10px; cursor: pointer; }
+        .ocupada { background: #dc3545; }
     </style>
 </head>
 <body>
-
-<h1>🍻 Mesas - Boteco 934</h1>
-<div class="grid-mesas" id="grade"></div>
-
-<div class="overlay" id="overlay" onclick="fecharModal()"></div>
-
-<div id="modal-mesa" class="modal">
-    <h2 id="titulo-modal" style="margin-top:0;">Mesa</h2>
-    <div id="conteudo-mesa"></div>
-    <button class="btn" style="background:#95a5a6; color:white;" onclick="fecharModal()">FECHAR JANELA</button>
-</div>
-
-<script>
-    const totalMesas = 15; // Ajuste quantas mesas o Boteco tem
-
-    function carregarMesas() {
-        db.collection("mesas_ativas").onSnapshot(snap => {
-            const grade = document.getElementById('grade');
-            grade.innerHTML = "";
-            let mesasOcupadas = {};
-            snap.forEach(doc => { mesasOcupadas[doc.id] = doc.data(); });
-
-            for(let i = 1; i <= totalMesas; i++) {
-                const dados = mesasOcupadas[i];
-                const div = document.createElement('div');
-                div.className = `mesa-card ${dados ? 'mesa-aberta' : ''}`;
-                div.innerHTML = `<h3>MESA ${i}</h3><p>${dados ? '👤 ' + dados.cliente : '✅ LIVRE'}</p><strong>${dados ? 'R$ ' + dados.total.toFixed(2) : ''}</strong>`;
-                div.onclick = () => gerenciarMesa(i, dados);
-                grade.appendChild(div);
-            }
-        });
-    }
-
-    function gerenciarMesa(numero, dados) {
-        const modal = document.getElementById('modal-mesa');
-        const overlay = document.getElementById('overlay');
-        const conteudo = document.getElementById('conteudo-mesa');
-        document.getElementById('titulo-modal').innerText = `Mesa ${numero}`;
-        modal.style.display = 'block';
-        overlay.style.display = 'block';
-
-        if(!dados) {
-            conteudo.innerHTML = `
-                <input type="text" id="nome-cliente" placeholder="Nome do Cliente" autofocus>
-                <button class="btn btn-blue" onclick="abrirMesa(${numero})">ABRIR MESA</button>
-            `;
-        } else {
-            conteudo.innerHTML = `
-                <div style="text-align:left; background:#f9f9f9; padding:10px; border-radius:8px; margin-bottom:10px;">
-                    <strong>Cliente:</strong> ${dados.cliente}<br>
-                    <strong>Total Consumido:</strong> R$ ${dados.total.toFixed(2)}<br>
-                    <strong style="color:#27ae60;">Total Pago:</strong> R$ ${dados.pago.toFixed(2)}
-                </div>
-                
-                <p style="margin:5px 0; font-size:14px;">Bipe o produto para adicionar:</p>
-                <input type="text" id="barcode-mesa" class="barcode-input" placeholder="Código de Barras" onkeypress="verificarBarcode(event, ${numero}, ${dados.total})">
-                
-                <hr>
-                <input type="number" id="valor-pgto" placeholder="Valor do Pagamento">
-                <button class="btn btn-green" onclick="pagar(${numero}, ${dados.pago})">REGISTRAR PAGAMENTO</button>
-                <button class="btn btn-red" onclick="encerrar(${numero}, ${dados.total}, ${dados.pago})">ENCERRAR COMANDA</button>
-            `;
-            setTimeout(() => document.getElementById('barcode-mesa').focus(), 100);
-        }
-    }
-
-    function verificarBarcode(e, n, totalAtual) {
-        if (e.key === 'Enter') {
-            const code = e.target.value;
-            db.collection("produtos").where("codigoBarras", "==", code).get().then(snap => {
-                if(snap.empty) return alert("Produto não cadastrado!");
-                snap.forEach(doc => {
-                    const p = doc.data();
-                    db.collection("mesas_ativas").doc(n.toString()).update({
-                        total: totalAtual + p.preco
-                    });
-                    alert(p.nome + " adicionado!");
-                    fecharModal();
-                });
-            });
-        }
-    }
-
-    function abrirMesa(n) {
-        const nome = document.getElementById('nome-cliente').value;
-        if(!nome) return alert("Nome obrigatório!");
-        db.collection("mesas_ativas").doc(n.toString()).set({ cliente: nome, total: 0, pago: 0 });
-        fecharModal();
-    }
-
-    function pagar(n, pagoJa) {
-        const v = parseFloat(document.getElementById('valor-pgto').value);
-        if(!v) return;
-        db.collection("mesas_ativas").doc(n.toString()).update({ pago: pagoJa + v });
-        fecharModal();
-    }
-
-    function encerrar(n, total, pago) {
-        if(pago < total) {
-            alert("❌ PAGAMENTO PENDENTE!\nFaltam R$ " + (total - pago).toFixed(2));
-        } else {
-            if(confirm("Confirmar fechamento da Mesa " + n + "?")) {
-                db.collection("mesas_ativas").doc(n.toString()).delete();
-                fecharModal();
-            }
-        }
-    }
-
-    function fecharModal() { 
-        document.getElementById('modal-mesa').style.display = 'none'; 
-        document.getElementById('overlay').style.display = 'none';
-    }
-    
-    carregarMesas();
-</script>
+    <a href="index.html">⬅ Voltar</a>
+    <h1>Mapa de Mesas</h1>
+    <div onclick="this.classList.toggle('ocupada')" class="mesa">Mesa 01</div>
+    <div onclick="this.classList.toggle('ocupada')" class="mesa">Mesa 02</div>
+    <div onclick="this.classList.toggle('ocupada')" class="mesa">Mesa 03</div>
+    <p><i>Dica: Clique na mesa para mudar a cor (Verde = Livre / Vermelho = Ocupada)</i></p>
 </body>
 </html>
