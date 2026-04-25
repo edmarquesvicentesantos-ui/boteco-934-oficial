@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BOTECO 934 - PDV OFICIAL</title>
+    <title>BOTECO 934 - PDV BLINDADO</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-        import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
+        import { getDatabase, ref, push, set, update } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
 
-        // CONFIGURAÇÃO DO SEU FIREBASE
         const firebaseConfig = {
             apiKey: "COLE_SUA_CHAVE_AQUI", 
             authDomain: "boteco-934.firebaseapp.com",
@@ -27,15 +26,36 @@
         let totalVenda = 0;
         let itensCarrinho = [];
 
-        // Adiciona item sem multiplicar
+        // Verifica se tem nome para liberar os botões
+        window.validarNome = function() {
+            const nome = document.getElementById('nome-cliente').value.trim();
+            const botoes = document.querySelectorAll('.product-card');
+            botoes.forEach(btn => {
+                if(nome.length >= 3) {
+                    btn.style.opacity = "1";
+                    btn.style.pointerEvents = "auto";
+                } else {
+                    btn.style.opacity = "0.4";
+                    btn.style.pointerEvents = "none";
+                }
+            });
+        }
+
         window.adicionarItem = function(nome, preco) {
-            const idUnico = Date.now(); // Cria um ID para cada clique
+            const nomeCliente = document.getElementById('nome-cliente').value.trim();
+            const idUnico = Date.now();
             itensCarrinho.push({id: idUnico, nome: nome, preco: preco});
             totalVenda += preco;
+            
+            // Registra que a mesa/cliente iniciou consumo no Firebase
+            update(ref(db, 'status_mesas/' + nomeCliente), {
+                status: "OCUPADA",
+                ultima_atualizacao: new Date().toLocaleString('pt-BR')
+            });
+
             atualizarVisualBalcao();
         }
 
-        // Remove item pelo ID único (X Vermelho)
         window.removerItem = function(id) {
             const index = itensCarrinho.findIndex(item => item.id === id);
             if (index > -1) {
@@ -47,15 +67,14 @@
 
         function atualizarVisualBalcao() {
             const areaComanda = document.getElementById('comanda-itens');
-            areaComanda.innerHTML = ""; // Limpa antes de redesenhar
-            
+            areaComanda.innerHTML = "";
             itensCarrinho.forEach((item) => {
                 areaComanda.innerHTML += `
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; padding:8px; background:#fff; border-radius:5px; border-left:4px solid #d32f2f; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                        <span style="font-size:13px; font-weight:bold;">${item.nome}</span>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; padding:8px; background:#fff; border-radius:5px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                        <span style="font-size:13px;">${item.nome}</span>
                         <div style="display:flex; align-items:center; gap:10px;">
-                            <span style="color:#28a745; font-weight:bold;">R$ ${item.preco.toFixed(2)}</span>
-                            <button onclick="removerItem(${item.id})" style="background:#ffebee; border:none; color:#d32f2f; border-radius:50%; width:24px; height:24px; cursor:pointer; font-weight:bold;">&times;</button>
+                            <span style="font-weight:bold;">R$ ${item.preco.toFixed(2)}</span>
+                            <button onclick="removerItem(${item.id})" style="background:none; border:none; color:#d32f2f; cursor:pointer; font-size:18px;">&times;</button>
                         </div>
                     </div>`;
             });
@@ -64,10 +83,7 @@
 
         window.finalizarVenda = function(metodo) {
             const nomeCliente = document.getElementById('nome-cliente').value.trim();
-            
-            // Validação de Nome e Valor
-            if(nomeCliente === "") { alert("⚠️ Informe o nome do cliente para abrir a mesa/venda!"); return; }
-            if(totalVenda <= 0) { alert("⚠️ Não há itens para cobrar!"); return; }
+            if(totalVenda <= 0) return;
 
             const vendasRef = ref(db, 'vendas');
             set(push(vendasRef), {
@@ -75,10 +91,11 @@
                 total: totalVenda,
                 metodo: metodo,
                 data: new Date().toLocaleString('pt-BR'),
-                status: "PAGO TOTAL",
-                produtos: itensCarrinho
+                pago: true
             }).then(() => {
-                alert("✅ Venda Finalizada e Paga por " + nomeCliente);
+                // Ao pagar, libera o status no Firebase
+                update(ref(db, 'status_mesas/' + nomeCliente), { status: "LIVRE" });
+                alert("✅ Venda Finalizada!");
                 limparTudo();
             });
         }
@@ -89,6 +106,7 @@
             document.getElementById('nome-cliente').value = "";
             document.getElementById('comanda-itens').innerHTML = "";
             document.getElementById('resumo-total').innerText = "R$ 0.00";
+            validarNome();
         }
 
         window.mudarRadio = function(url) {
@@ -100,56 +118,44 @@
 
     <style>
         body { font-family: 'Segoe UI', sans-serif; margin: 0; background-color: #f4f7f6; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-        .header { background-color: #d32f2f; color: white; padding: 8px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-        
-        .radio-box { display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.2); padding: 5px 12px; border-radius: 20px; }
-        .radio-box select { background: transparent; color: white; border: none; font-size: 11px; cursor: pointer; outline: none; }
-        .radio-box select option { background: #d32f2f; }
-
+        .header { background-color: #d32f2f; color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; }
         .main-container { display: flex; flex: 1; overflow: hidden; }
-        .sidebar { width: 200px; background: #fff; border-right: 1px solid #ddd; padding: 15px; display: flex; flex-direction: column; gap: 8px; }
-        .btn-menu { width: 100%; border: none; padding: 12px; border-radius: 6px; color: white; font-weight: bold; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 10px; font-size: 13px; }
-        
+        .sidebar { width: 200px; background: #fff; border-right: 1px solid #ddd; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+        .btn-menu { width: 100%; border: none; padding: 12px; border-radius: 6px; color: white; font-weight: bold; cursor: pointer; text-align: left; }
         .content { flex: 1; padding: 20px; overflow-y: auto; background: #fff; }
         .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; }
-        .product-card { background: #fdfdfd; border: 1px solid #eee; border-radius: 10px; padding: 15px; text-align: center; cursor: pointer; border-bottom: 4px solid #d32f2f; transition: 0.2s; }
-        .product-card:hover { background: #f5f5f5; transform: translateY(-2px); }
+        
+        /* Estudo do Card: Começa bloqueado */
+        .product-card { 
+            background: #fdfdfd; border: 1px solid #eee; border-radius: 10px; padding: 15px; text-align: center; 
+            border-bottom: 4px solid #d32f2f; opacity: 0.4; pointer-events: none; transition: 0.3s;
+        }
 
         .right-bar { width: 330px; background: #f9f9f9; border-left: 1px solid #ddd; padding: 15px; display: flex; flex-direction: column; }
-        .input-cliente { width: 100%; padding: 12px; border: 2px solid #d32f2f; border-radius: 8px; margin-bottom: 10px; font-size: 14px; box-sizing: border-box; font-weight: bold; }
-        .comanda-lista { flex: 1; overflow-y: auto; margin-top: 5px; }
-        
-        .total-box { border-top: 3px solid #d32f2f; padding-top: 10px; }
-        .total-valor { font-size: 26px; font-weight: bold; color: #d32f2f; display: flex; justify-content: space-between; margin-bottom: 10px; }
-        .pagamento-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-        .btn-pag { border: none; padding: 12px; border-radius: 6px; color: white; font-weight: bold; cursor: pointer; font-size: 12px; text-transform: uppercase; }
+        .input-cliente { width: 100%; padding: 12px; border: 2px solid #d32f2f; border-radius: 8px; margin-bottom: 10px; font-weight: bold; }
+        .total-box { border-top: 3px solid #d32f2f; padding-top: 10px; margin-top: auto; }
+        .btn-pag { border: none; padding: 12px; border-radius: 6px; color: white; font-weight: bold; cursor: pointer; margin-top: 5px; }
     </style>
 </head>
-<body>
+<body onload="validarNome()">
 
     <div class="header">
-        <div><h1 style="margin:0; font-size:20px; letter-spacing:1px;">BOTECO 934</h1></div>
-        
-        <div class="radio-box">
-            <i class="fas fa-compact-disc fa-spin"></i>
-            <select onchange="mudarRadio(this.value)">
+        <h1>BOTECO 934</h1>
+        <div style="display:flex; align-items:center; gap:15px;">
+            <select onchange="mudarRadio(this.value)" style="border-radius:15px; padding:5px;">
                 <option value="https://stream.itinerante.com.br/8026/stream">Rádio Rock</option>
                 <option value="https://26623.live.streamtheworld.com/KISS_FM_SP_SC?">Kiss FM</option>
-                <option value="https://antena1.hostingradio.com.br/antena1sp_128k.mp3">Antena 1</option>
             </select>
-            <audio id="audio-player" controls style="height: 25px; width: 35px;">
-                <source src="https://stream.itinerante.com.br/8026/stream" type="audio/mpeg">
-            </audio>
+            <audio id="audio-player" controls style="height:30px; width:40px;"><source src="https://stream.itinerante.com.br/8026/stream"></audio>
+            <div id="relogio"></div>
         </div>
-        <div id="relogio" style="font-size: 12px;"></div>
     </div>
 
     <div class="main-container">
         <div class="sidebar">
-            <button class="btn-menu" style="background:#1976d2" onclick="location.href='mesas.html'"><i class="fas fa-chair"></i> MESAS</button>
-            <button class="btn-menu" style="background:#388e3c" onclick="location.href='estoque.html'"><i class="fas fa-box"></i> ESTOQUE</button>
-            <button class="btn-menu" style="background:#7b1fa2" onclick="location.href='vendas.html'"><i class="fas fa-chart-line"></i> RELATÓRIOS</button>
-            <button class="btn-menu" style="background:#616161" onclick="location.href='precificacao.html'"><i class="fas fa-calculator"></i> PREÇOS</button>
+            <button class="btn-menu" style="background:#1976d2" onclick="location.href='mesas.html'">MESAS</button>
+            <button class="btn-menu" style="background:#388e3c" onclick="location.href='estoque.html'">ESTOQUE</button>
+            <button class="btn-menu" style="background:#7b1fa2" onclick="location.href='vendas.html'">VENDAS</button>
         </div>
 
         <div class="content">
@@ -157,29 +163,29 @@
                 <div class="product-card" onclick="adicionarItem('Cerveja Lata', 5.00)"><h3>🍺 Cerveja</h3><b>R$ 5,00</b></div>
                 <div class="product-card" onclick="adicionarItem('Refrigerante', 4.50)"><h3>🥤 Refri</h3><b>R$ 4,50</b></div>
                 <div class="product-card" onclick="adicionarItem('Dose Pitú', 3.00)"><h3>🥃 Pitú</h3><b>R$ 3,00</b></div>
-                <div class="product-card" onclick="adicionarItem('Espetinho', 12.00)"><h3>🍢 Espeto</h3><b>R$ 12,00</b></div>
             </div>
         </div>
 
         <div class="right-bar">
-            <input type="text" id="nome-cliente" class="input-cliente" placeholder="NOME DO CLIENTE (Obrigatório)">
-            <h4 style="margin:5px 0; color:#666;"><i class="fas fa-shopping-cart"></i> ITENS NO BALCÃO</h4>
-            <div class="comanda-lista" id="comanda-itens"></div>
+            <input type="text" id="nome-cliente" class="input-cliente" placeholder="NOME DO CLIENTE" onkeyup="validarNome()">
+            <div id="comanda-itens" style="flex:1; overflow-y:auto;"></div>
 
             <div class="total-box">
-                <div class="total-valor"><span>TOTAL</span> <span id="resumo-total">R$ 0.00</span></div>
-                <div class="pagamento-grid">
+                <div style="display:flex; justify-content:space-between; font-size:24px; font-weight:bold; color:#d32f2f;">
+                    <span>TOTAL</span> <span id="resumo-total">R$ 0.00</span>
+                </div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px;">
                     <button class="btn-pag" style="background:#4db6ac" onclick="finalizarVenda('PIX')">PIX</button>
                     <button class="btn-pag" style="background:#26a69a" onclick="finalizarVenda('DINHEIRO')">DINHEIRO</button>
                     <button class="btn-pag" style="background:#42a5f5" onclick="finalizarVenda('CARTÃO')">CARTÃO</button>
-                    <button class="btn-pag" style="background:#bbb; color:#333" onclick="limparTudo()">CANCELAR</button>
+                    <button class="btn-pag" style="background:#bbb; color:333" onclick="limparTudo()">CANCELAR</button>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        setInterval(() => { document.getElementById('relogio').innerText = new Date().toLocaleString('pt-BR'); }, 1000);
+        setInterval(() => { document.getElementById('relogio').innerText = new Date().toLocaleTimeString(); }, 1000);
     </script>
 </body>
 </html>
