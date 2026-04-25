@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BOTECO 934 - PDV COMPLETO + RÁDIO</title>
+    <title>BOTECO 934 - PDV COMPLETO</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <script type="module">
@@ -29,7 +29,27 @@
         window.adicionarItem = function(nome, preco) {
             itensCarrinho.push({nome, preco});
             totalVenda += preco;
-            document.getElementById('comanda-itens').innerHTML += `<div style="display:flex; justify-content:space-between; margin-bottom:5px; font-size:14px;"><span>${nome}</span> <span>R$ ${preco.toFixed(2)}</span></div>`;
+            atualizarVisualBalcao();
+        }
+
+        // FUNÇÃO DO X VERMELHO: Remove apenas um item específico
+        window.removerItem = function(index) {
+            totalVenda -= itensCarrinho[index].preco;
+            itensCarrinho.splice(index, 1);
+            atualizarVisualBalcao();
+        }
+
+        function atualizarVisualBalcao() {
+            const areaComanda = document.getElementById('comanda-itens');
+            areaComanda.innerHTML = ""; 
+            
+            itensCarrinho.forEach((item, index) => {
+                areaComanda.innerHTML += `
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:14px; background:#f9f9f9; padding:5px; border-radius:5px;">
+                        <span>${item.nome} - R$ ${item.preco.toFixed(2)}</span> 
+                        <button onclick="removerItem(${index})" style="background:none; border:none; color:#d32f2f; cursor:pointer; font-weight:bold; font-size:16px;">&times;</button>
+                    </div>`;
+            });
             document.getElementById('resumo-total').innerText = "R$ " + totalVenda.toFixed(2);
         }
 
@@ -45,14 +65,24 @@
             document.getElementById('comanda-itens').innerHTML = "";
             document.getElementById('resumo-total').innerText = "R$ 0.00";
         }
+
+        // Função para trocar a rádio
+        window.mudarRadio = function(url) {
+            const player = document.getElementById('audio-player');
+            player.src = url;
+            player.play();
+        }
     </script>
 
     <style>
         body { font-family: 'Segoe UI', sans-serif; margin: 0; background-color: #f4f7f6; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         .header { background-color: #d32f2f; color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; }
-        .radio-player { display: flex; align-items: center; background: rgba(0,0,0,0.2); padding: 5px 15px; border-radius: 30px; gap: 10px; }
-        .radio-player i { color: #ffc107; }
         
+        /* Estilo da Seleção de Rádio */
+        .radio-box { display: flex; align-items: center; gap: 10px; background: rgba(0,0,0,0.2); padding: 5px 15px; border-radius: 30px; }
+        .radio-box select { background: transparent; color: white; border: none; font-size: 12px; font-weight: bold; cursor: pointer; outline: none; }
+        .radio-box select option { background: #d32f2f; }
+
         .main-container { display: flex; flex: 1; overflow: hidden; }
         .sidebar { width: 220px; background-color: white; border-right: 1px solid #ddd; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
         .btn-menu { width: 100%; border: none; padding: 12px; border-radius: 5px; color: white; font-weight: bold; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 10px; }
@@ -63,14 +93,11 @@
         .product-card { background: #fdfdfd; border: 1px solid #eee; border-radius: 10px; padding: 15px; text-align: center; cursor: pointer; border-bottom: 4px solid #d32f2f; }
         .product-card b { color: #28a745; display: block; margin-top: 5px; }
 
-        .right-bar { width: 300px; background-color: white; border-left: 1px solid #ddd; padding: 15px; display: flex; flex-direction: column; }
+        .right-bar { width: 320px; background-color: white; border-left: 1px solid #ddd; padding: 15px; display: flex; flex-direction: column; }
         .comanda-lista { flex: 1; overflow-y: auto; margin-top: 10px; border-top: 1px solid #eee; padding-top: 10px; }
-        .total-box { border-top: 3px solid #ddd; padding-top: 10px; margin-top: auto; }
-        .total-valor { font-size: 24px; font-weight: bold; color: #d32f2f; display: flex; justify-content: space-between; margin-bottom: 15px; }
-        
-        .pagamento-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+        .total-valor { font-size: 24px; font-weight: bold; color: #d32f2f; display: flex; justify-content: space-between; border-top: 3px solid #ddd; padding-top: 10px; }
+        .pagamento-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 10px; }
         .btn-pag { border: none; padding: 10px; border-radius: 5px; color: white; font-weight: bold; cursor: pointer; }
-        .btn-pix { background: #4db6ac; } .btn-dinheiro { background: #26a69a; } .btn-cartao { background: #42a5f5; }
     </style>
 </head>
 <body>
@@ -78,12 +105,16 @@
     <div class="header">
         <div><h1 style="margin:0; font-size:22px;">BOTECO 934</h1></div>
         
-        <div class="radio-player">
+        <div class="radio-box">
             <i class="fas fa-compact-disc fa-spin"></i>
-            <span style="font-size: 12px; font-weight: bold;">RÁDIO ROCK</span>
-            <audio controls style="height: 30px; width: 180px;">
+            <select onchange="mudarRadio(this.value)">
+                <option value="https://stream.itinerante.com.br/8026/stream">Rádio Itinerante (Rock)</option>
+                <option value="https://26623.live.streamtheworld.com/KISS_FM_SP_SC?">Kiss FM</option>
+                <option value="https://ice.fabricahost.com.br/radiometal">Web Rádio Metal</option>
+                <option value="https://antena1.hostingradio.com.br/antena1sp_128k.mp3">Antena 1 (Flashback)</option>
+            </select>
+            <audio id="audio-player" controls style="height: 30px; width: 40px;">
                 <source src="https://stream.itinerante.com.br/8026/stream" type="audio/mpeg">
-                Seu navegador não suporta áudio.
             </audio>
         </div>
 
@@ -92,7 +123,6 @@
 
     <div class="main-container">
         <div class="sidebar">
-            <h3>NAVEGAÇÃO</h3>
             <button class="btn-menu btn-blue" onclick="location.href='mesas.html'"><i class="fas fa-chair"></i> MESAS</button>
             <button class="btn-menu btn-green" onclick="location.href='estoque.html'"><i class="fas fa-box"></i> ESTOQUE</button>
             <button class="btn-menu btn-purple" onclick="location.href='vendas.html'"><i class="fas fa-chart-line"></i> RELATÓRIOS</button>
@@ -100,7 +130,6 @@
         </div>
 
         <div class="content">
-            <input type="text" placeholder="🔍 Buscar produto..." style="width:100%; padding:12px; border:2px solid #d32f2f; border-radius:25px; margin-bottom:20px; box-sizing:border-box;">
             <div class="product-grid">
                 <div class="product-card" onclick="adicionarItem('Cerveja Lata', 5.00)"><span>🍺</span><h3>Cerveja Lata</h3><b>R$ 5,00</b></div>
                 <div class="product-card" onclick="adicionarItem('Refrigerante', 4.50)"><span>🥤</span><h3>Refrigerante</h3><b>R$ 4,50</b></div>
@@ -115,10 +144,10 @@
             <div class="total-box">
                 <div class="total-valor"><span>TOTAL</span> <span id="resumo-total">R$ 0.00</span></div>
                 <div class="pagamento-grid">
-                    <button class="btn-pag btn-pix" onclick="finalizarVenda('PIX')">PIX</button>
-                    <button class="btn-pag btn-dinheiro" onclick="finalizarVenda('DINHEIRO')">DINHEIRO</button>
-                    <button class="btn-pag btn-cartao" onclick="finalizarVenda('CARTÃO')">CARTÃO</button>
-                    <button class="btn-pag" style="background:#bdbdbd; grid-column:span 2; color:333;" onclick="limparPainel()">LIMPAR</button>
+                    <button class="btn-pag" style="background:#4db6ac" onclick="finalizarVenda('PIX')">PIX</button>
+                    <button class="btn-pag" style="background:#26a69a" onclick="finalizarVenda('DINHEIRO')">DINHEIRO</button>
+                    <button class="btn-pag" style="background:#42a5f5" onclick="finalizarVenda('CARTÃO')">CARTÃO</button>
+                    <button class="btn-pag" style="background:#bbb; color:333" onclick="limparPainel()">LIMPAR</button>
                 </div>
             </div>
         </div>
