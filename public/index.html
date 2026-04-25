@@ -14,7 +14,7 @@
         .box-login input { padding: 12px; border-radius: 5px; border: none; width: 100%; text-align: center; font-size: 18px; margin-bottom: 15px; }
         .box-login button { width: 100%; padding: 12px; background: #ffc107; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; }
 
-        /* SISTEMA */
+        /* SISTEMA PRINCIPAL */
         #sistema { display: none; flex-direction: column; height: 100vh; background: #f0f2f5; color: #333; }
         header { background: #1a1a1a; color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #28a745; min-height: 70px; }
         
@@ -22,15 +22,18 @@
         .vendas { flex: 2; padding: 20px; overflow-y: auto; }
         .cupom { flex: 1; background: white; border-left: 2px solid #ddd; padding: 15px; display: flex; flex-direction: column; }
         
+        /* CONTAINER DE IDENTIFICAÇÃO */
         .mesa-container { background: white; padding: 15px; border-radius: 10px; margin-bottom: 20px; display: flex; gap: 10px; align-items: center; border: 1px solid #ddd; }
         .mesa-container input { flex: 1; padding: 12px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; }
 
+        /* GRID DE PRODUTOS EM CARDS */
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; }
         .card { background: white; padding: 20px; border-radius: 10px; text-align: center; cursor: pointer; border: 1px solid #ddd; transition: 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .card:hover { border-color: #28a745; transform: translateY(-2px); }
         .card strong { display: block; font-size: 14px; margin-bottom: 5px; color: #1a1a1a; }
         .card span { color: #28a745; font-weight: bold; font-size: 18px; }
 
+        /* ESTILO DO CUPOM E BOTÕES */
         .btn-remover { color: #dc3545; font-weight: bold; cursor: pointer; padding: 0 10px; font-size: 18px; text-decoration: none; }
         .total-box { font-size: 35px; font-weight: bold; color: #28a745; text-align: right; margin: 15px 0; }
         .btn-acao { padding: 15px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; color: white; font-size: 16px; width: 100%; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 10px; }
@@ -97,16 +100,17 @@
 <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
 
 <script>
-    // CONFIGURAÇÃO DO SEU FIREBASE
+    // ⚠️ SUBSTITUA PELAS CONFIGURAÇÕES QUE ESTÃO NA ENGRENAGEM DO SEU FIREBASE
     const firebaseConfig = {
-        apiKey: "AIzaSy...", // COLOQUE SUA API KEY AQUI
+        apiKey: "COLE_AQUI_SUA_API_KEY",
         authDomain: "boteco-934-77649.firebaseapp.com",
         databaseURL: "https://boteco-934-77649-default-rtdb.firebaseio.com",
         projectId: "boteco-934-77649",
         storageBucket: "boteco-934-77649.appspot.com",
-        appId: "1:..." // COLOQUE SEU APP ID AQUI
+        appId: "COLE_AQUI_SEU_APP_ID"
     };
 
+    // Inicializa o Firebase
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
@@ -133,10 +137,53 @@
     function desenhar() {
         const l = document.getElementById('lista-itens');
         let total = 0;
-        l.innerHTML = ""; // CORREÇÃO: Limpa para não repetir
+        l.innerHTML = ""; // Limpa a lista antes de redesenhar para evitar duplicados
         
         conta.forEach((item, index) => {
             total += item.p;
             l.innerHTML += `
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
-                    <div><span class="btn-
+                    <div><span class="btn-remover" onclick="remover(${index})">X</span> 1x ${item.n}</div>
+                    <span>R$ ${item.p.toFixed(2)}</span>
+                </div>`;
+        });
+        vendaTotal = total;
+        document.getElementById('total-txt').innerText = "R$ " + total.toFixed(2);
+        document.getElementById('total-cupom').innerText = "R$ " + total.toFixed(2);
+    }
+
+    function atualizarHeaderCupom() {
+        const m = document.getElementById('campo-mesa').value;
+        document.getElementById('info-mesa-cupom').innerText = m ? "Mesa/Cli: " + m : "Mesa: Balcão";
+    }
+
+    function finalizarVenda() {
+        if(conta.length === 0) return alert("Adicione itens ao cupom!");
+        const mesa = document.getElementById('campo-mesa').value || "Balcão";
+        
+        // SALVA OS DADOS NO FIREBASE REALTIME DATABASE
+        db.ref('vendas').push({
+            identificacao: mesa,
+            produtos: conta,
+            valor_total: vendaTotal,
+            data_hora: new Date().toLocaleString()
+        }).then(() => {
+            window.print();
+            conta = [];
+            desenhar();
+            document.getElementById('campo-mesa').value = "";
+        }).catch((erro) => {
+            alert("Erro ao salvar no banco de dados: " + erro.message);
+        });
+    }
+
+    function enviarZap() {
+        const mesa = document.getElementById('campo-mesa').value || "Balcão";
+        let msg = `*BOTECO 934*\n*Mesa:* ${mesa}\n---\n`;
+        conta.forEach(i => msg += `• ${i.n}: R$ ${i.p.toFixed(2)}\n`);
+        msg += `---\n*TOTAL: R$ ${vendaTotal.toFixed(2)}*`;
+        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`);
+    }
+</script>
+</body>
+</html>
