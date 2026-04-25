@@ -3,139 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SISTEMA PDV - BOTECO 934</title>
-    <style>
-        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { margin: 0; background: #1a1a1a; color: white; height: 100vh; display: flex; flex-direction: column; }
-        
-        header { background: #1a1a1a; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #28a745; }
-        .conteudo { display: flex; flex: 1; overflow: hidden; background: #f0f2f5; color: #333; }
-        
-        /* GRID DE PRODUTOS */
-        .vendas { flex: 2; padding: 20px; overflow-y: auto; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; }
-        .card { background: white; padding: 25px 15px; border-radius: 12px; text-align: center; cursor: pointer; border: 1px solid #ddd; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: 0.2s; }
-        .card:active { transform: scale(0.95); }
-        .card strong { display: block; font-size: 16px; margin-bottom: 8px; color: #1a1a1a; }
-        .card span { color: #28a745; font-weight: bold; font-size: 20px; }
+    <title>Boteco 934 - PDV</title>
+    <script type="module">
+        // Configuração do Firebase do Boteco 934
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+        import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
 
-        /* CUPOM LATERAL */
-        .cupom { flex: 1; background: white; border-left: 2px solid #ddd; padding: 20px; display: flex; flex-direction: column; }
-        #caixa-itens { flex: 1; overflow-y: auto; font-family: monospace; border: 1px solid #eee; padding: 10px; margin-bottom: 15px; color: #000; }
-        .item-linha { display: flex; justify-content: space-between; margin-bottom: 8px; border-bottom: 1px dashed #eee; padding-bottom: 4px; }
-        
-        .total-container { font-size: 40px; font-weight: bold; color: #28a745; text-align: right; margin-bottom: 20px; }
-        .btn { width: 100%; padding: 18px; border-radius: 10px; border: none; color: white; font-weight: bold; font-size: 18px; cursor: pointer; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        .btn-remover { color: #dc3545; font-weight: bold; cursor: pointer; margin-right: 10px; }
+        const firebaseConfig = {
+            apiKey: "AIzaSyAs-lO0zXpU8M1F-h9Q8G5uV5uV5uV5uV5", 
+            authDomain: "boteco-934-77649.firebaseapp.com",
+            databaseURL: "https://boteco-934-77649-default-rtdb.firebaseio.com",
+            projectId: "boteco-934-77649",
+            storageBucket: "boteco-934-77649.appspot.com",
+            messagingSenderId: "367396165507",
+            appId: "1:367396165507:web:865666f7f2b60486c07525"
+        };
 
-        @media print {
-            body * { visibility: hidden; }
-            #caixa-itens, #caixa-itens * { visibility: visible; }
-            #caixa-itens { position: absolute; left: 0; top: 0; width: 100%; border: none; }
+        // Inicializa o Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // Função para salvar venda
+        window.salvarVenda = function(produto, valor) {
+            const vendasRef = ref(db, 'vendas');
+            const novaVendaRef = push(vendasRef);
+            set(novaVendaRef, {
+                item: produto,
+                preco: valor,
+                data: new Date().toLocaleString()
+            }).then(() => {
+                alert("Venda registrada no Boteco 934!");
+            }).catch((error) => {
+                console.error("Erro ao salvar:", error);
+            });
         }
+    </script>
+    <style>
+        body { font-family: sans-serif; text-align: center; background: #222; color: white; }
+        .btn { padding: 20px; margin: 10px; font-size: 18px; cursor: pointer; border-radius: 10px; border: none; }
+        .cerveja { background: #f1c40f; color: #000; }
+        .petisco { background: #e67e22; color: #fff; }
     </style>
 </head>
 <body>
+    <h1>🍻 BOTECO 934</h1>
+    <p>Clique no produto para registrar a venda:</p>
+    
+    <button class="btn cerveja" onclick="salvarVenda('Cerveja 600ml', 12.00)">Cerveja 600ml - R$ 12,00</button>
+    <button class="btn petisco" onclick="salvarVenda('Porção Batata', 25.00)">Porção Batata - R$ 25,00</button>
 
-<header>
-    <div style="font-size: 24px; font-weight: bold; color: #ffc107;">BOTECO 934</div>
-    <input type="text" id="identificacao" placeholder="Nº Mesa / Cliente" style="padding: 10px; border-radius: 5px; border: none; width: 250px; font-size: 16px;">
-</header>
-
-<div class="conteudo">
-    <div class="vendas">
-        <div class="grid">
-            <div class="card" onclick="add('Cerveja 600ml', 12.00)"><strong>Cerveja 600ml</strong><span>R$ 12,00</span></div>
-            <div class="card" onclick="add('Dose Cana', 5.00)"><strong>Dose Cana</strong><span>R$ 5,00</span></div>
-            <div class="card" onclick="add('Refrigerante', 6.00)"><strong>Refrigerante</strong><span>R$ 6,00</span></div>
-            <div class="card" onclick="add('Batata G', 25.00)"><strong>Batata G</strong><span>R$ 25,00</span></div>
-            <div class="card" onclick="add('Heineken', 18.00)"><strong>Heineken</strong><span>R$ 18,00</span></div>
-            <div class="card" onclick="add('Água Mineral', 4.00)"><strong>Água Mineral</strong><span>R$ 4,00</span></div>
-        </div>
-    </div>
-
-    <div class="cupom">
-        <div id="caixa-itens">
-            <div style="text-align: center; font-weight: bold; margin-bottom: 10px;">*** BOTECO 934 ***</div>
-            <div id="lista-venda"></div>
-        </div>
-        <div class="total-container" id="total-venda">R$ 0,00</div>
-        <button class="btn" style="background: #28a745;" onclick="finalizar()">🖨️ IMPRIMIR RECIBO</button>
-        <button class="btn" style="background: #25D366;" onclick="enviarZap()">📱 WHATSAPP</button>
-    </div>
-</div>
-
-<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
-
-<script>
-    // Configuração oficial do seu projeto boteco-934-77649
-    const firebaseConfig = {
-        apiKey: "AIzaSyBgyomVuXUPtvoeX5C4J2Vna50rUkP4I4w",
-        authDomain: "boteco-934-77649.firebaseapp.com",
-        databaseURL: "https://boteco-934-77649-default-rtdb.firebaseio.com",
-        projectId: "boteco-934-77649",
-        storageBucket: "boteco-934-77649.firebasestorage.app",
-        messagingSenderId: "972553465100",
-        appId: "1:972553465100:web:96d6a3d0199aa1f1d6ed29"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    let carrinho = [];
-    let total = 0;
-
-    function add(nome, preco) {
-        carrinho.push({nome, preco});
-        atualizar();
-    }
-
-    function remover(index) {
-        carrinho.splice(index, 1);
-        atualizar();
-    }
-
-    function atualizar() {
-        const lista = document.getElementById('lista-venda');
-        lista.innerHTML = "";
-        total = 0;
-        carrinho.forEach((item, i) => {
-            total += item.preco;
-            lista.innerHTML += `
-                <div class="item-linha">
-                    <span><b class="btn-remover" onclick="remover(${i})">X</b> 1x ${item.nome}</span>
-                    <span>R$ ${item.preco.toFixed(2)}</span>
-                </div>`;
-        });
-        document.getElementById('total-venda').innerText = "R$ " + total.toFixed(2);
-    }
-
-    function finalizar() {
-        if(carrinho.length === 0) return alert("Carrinho vazio!");
-        const mesa = document.getElementById('identificacao').value || "Balcão";
-        
-        // SALVA NO FIREBASE REALTIME DATABASE
-        db.ref('vendas').push({
-            identificacao: mesa,
-            itens: carrinho,
-            total_venda: total,
-            data: new Date().toLocaleString('pt-BR')
-        }).then(() => {
-            window.print();
-            carrinho = [];
-            document.getElementById('identificacao').value = "";
-            atualizar();
-        }).catch(err => alert("Erro ao salvar: " + err.message));
-    }
-
-    function enviarZap() {
-        const mesa = document.getElementById('identificacao').value || "Balcão";
-        let msg = `*BOTECO 934*\n*Mesa:* ${mesa}\n---\n`;
-        carrinho.forEach(item => msg += `• ${item.nome}: R$ ${item.preco.toFixed(2)}\n`);
-        msg += `---\n*TOTAL: R$ ${total.toFixed(2)}*`;
-        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`);
-    }
-</script>
+    <hr>
+    <p>Os dados aparecerão no seu Firebase Realtime Database.</p>
 </body>
 </html>
