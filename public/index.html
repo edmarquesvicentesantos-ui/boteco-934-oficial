@@ -8,11 +8,13 @@
         * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
         body { margin: 0; background: #1a1a1a; color: white; overflow: hidden; height: 100vh; }
         
+        /* TELA DE LOGIN */
         #tela-login { display: flex; justify-content: center; align-items: center; height: 100vh; flex-direction: column; position: fixed; width: 100%; top: 0; left: 0; z-index: 999; background: #1a1a1a; }
         .box-login { background: #222; padding: 40px; border-radius: 15px; border: 2px solid #ffc107; text-align: center; }
         .box-login input { padding: 12px; border-radius: 5px; border: none; width: 100%; text-align: center; font-size: 18px; margin-bottom: 15px; }
         .box-login button { width: 100%; padding: 12px; background: #ffc107; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; }
 
+        /* SISTEMA */
         #sistema { display: none; flex-direction: column; height: 100vh; background: #f0f2f5; color: #333; }
         header { background: #1a1a1a; color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #28a745; min-height: 70px; }
         
@@ -24,12 +26,12 @@
         .mesa-container input { flex: 1; padding: 12px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; }
 
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; }
-        .card { background: white; padding: 20px; border-radius: 10px; text-align: center; cursor: pointer; border: 1px solid #ddd; transition: 0.2s; }
+        .card { background: white; padding: 20px; border-radius: 10px; text-align: center; cursor: pointer; border: 1px solid #ddd; transition: 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .card:hover { border-color: #28a745; transform: translateY(-2px); }
         .card strong { display: block; font-size: 14px; margin-bottom: 5px; color: #1a1a1a; }
         .card span { color: #28a745; font-weight: bold; font-size: 18px; }
 
-        .btn-remover { color: #dc3545; font-weight: bold; cursor: pointer; padding: 0 10px; font-size: 18px; }
+        .btn-remover { color: #dc3545; font-weight: bold; cursor: pointer; padding: 0 10px; font-size: 18px; text-decoration: none; }
         .total-box { font-size: 35px; font-weight: bold; color: #28a745; text-align: right; margin: 15px 0; }
         .btn-acao { padding: 15px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; color: white; font-size: 16px; width: 100%; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 10px; }
 
@@ -37,6 +39,7 @@
             header, .vendas, .btn-acao, #tela-login, .btn-remover { display: none !important; }
             #sistema { display: block !important; }
             .cupom { border: none; width: 100%; padding: 0; }
+            #caixa-imprimir { border: none !important; }
         }
     </style>
 </head>
@@ -60,16 +63,22 @@
         <div class="vendas">
             <div class="mesa-container">
                 <strong>IDENTIFICAR:</strong>
-                <input type="text" id="campo-mesa" placeholder="Nº da Mesa ou Nome do Cliente" oninput="atualizarHeaderCupom()">
+                <input type="text" id="campo-mesa" placeholder="Nº da Mesa ou Cliente" oninput="atualizarHeaderCupom()">
             </div>
-            <div class="grid" id="grid-produtos">
-                </div>
+            <div class="grid">
+                <div class="card" onclick="add('Cerveja 600ml', 12.00)"><strong>Cerveja 600ml</strong><span>R$ 12,00</span></div>
+                <div class="card" onclick="add('Dose Cana', 5.00)"><strong>Dose Cana</strong><span>R$ 5,00</span></div>
+                <div class="card" onclick="add('Refrigerante', 6.00)"><strong>Refrigerante</strong><span>R$ 6,00</span></div>
+                <div class="card" onclick="add('Batata G', 25.00)"><strong>Batata G</strong><span>R$ 25,00</span></div>
+                <div class="card" onclick="add('Heineken', 18.00)"><strong>Heineken</strong><span>R$ 18,00</span></div>
+                <div class="card" onclick="add('Água Mineral', 4.00)"><strong>Água Mineral</strong><span>R$ 4,00</span></div>
+            </div>
         </div>
         
         <div class="cupom">
             <div id="caixa-imprimir" style="flex:1; border:1px solid #eee; background:#fffcf5; padding:15px; font-family:monospace; overflow-y:auto; color: #000;">
                 <div style="text-align:center; font-weight:bold;">*** BOTECO 934 ***</div>
-                <div id="info-mesa-cupom" style="text-align:center; margin-bottom: 10px;">Mesa: Aguardando...</div>
+                <div id="info-mesa-cupom" style="text-align:center; margin-bottom: 10px;">Mesa: Balcão</div>
                 <hr>
                 <div id="lista-itens"></div>
                 <hr>
@@ -88,15 +97,14 @@
 <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
 
 <script>
-    // CONFIGURAÇÃO DO SEU FIREBASE (Cole seus dados aqui)
+    // CONFIGURAÇÃO DO SEU FIREBASE
     const firebaseConfig = {
-        apiKey: "SUA_API_KEY",
+        apiKey: "AIzaSy...", // COLOQUE SUA API KEY AQUI
         authDomain: "boteco-934-77649.firebaseapp.com",
         databaseURL: "https://boteco-934-77649-default-rtdb.firebaseio.com",
         projectId: "boteco-934-77649",
         storageBucket: "boteco-934-77649.appspot.com",
-        messagingSenderId: "SEU_SENDER_ID",
-        appId: "SEU_APP_ID"
+        appId: "1:..." // COLOQUE SEU APP ID AQUI
     };
 
     firebase.initializeApp(firebaseConfig);
@@ -105,33 +113,10 @@
     let conta = [];
     let vendaTotal = 0;
 
-    // Carregar produtos iniciais se o banco estiver vazio
-    const produtosIniciais = [
-        {n: 'Cerveja 600ml', p: 12.00},
-        {n: 'Dose Cana', p: 5.00},
-        {n: 'Refrigerante', p: 6.00},
-        {n: 'Batata G', p: 25.00},
-        {n: 'Heineken', p: 18.00},
-        {n: 'Água Mineral', p: 4.00}
-    ];
-
-    function carregarProdutos() {
-        const grid = document.getElementById('grid-produtos');
-        grid.innerHTML = "";
-        produtosIniciais.forEach(prod => {
-            grid.innerHTML += `
-                <div class="card" onclick="add('${prod.n}', ${prod.p})">
-                    <strong>${prod.n}</strong>
-                    <span>R$ ${prod.p.toFixed(2)}</span>
-                </div>`;
-        });
-    }
-
     function verificar() {
         if(document.getElementById('senha-input').value === '1234') { 
             document.getElementById('tela-login').style.display = 'none';
             document.getElementById('sistema').style.display = 'flex';
-            carregarProdutos();
         } else { alert("Senha incorreta!"); }
     }
 
@@ -148,53 +133,10 @@
     function desenhar() {
         const l = document.getElementById('lista-itens');
         let total = 0;
-        l.innerHTML = "";
+        l.innerHTML = ""; // CORREÇÃO: Limpa para não repetir
+        
         conta.forEach((item, index) => {
             total += item.p;
             l.innerHTML += `
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
-                    <div>
-                        <span class="btn-remover" onclick="remover(${index})">X</span>
-                        <span>1x ${item.n}</span>
-                    </div>
-                    <span>R$ ${item.p.toFixed(2)}</span>
-                </div>`;
-        });
-        vendaTotal = total;
-        document.getElementById('total-txt').innerText = "R$ " + total.toFixed(2);
-        document.getElementById('total-cupom').innerText = "R$ " + total.toFixed(2);
-    }
-
-    function finalizarVenda() {
-        if(conta.length === 0) return alert("Adicione itens!");
-        const mesa = document.getElementById('campo-mesa').value || "Balcão";
-        
-        // Salva a venda no Firebase
-        db.ref('vendas').push({
-            mesa: mesa,
-            itens: conta,
-            total: vendaTotal,
-            data: new Date().toLocaleString()
-        });
-
-        window.print();
-        conta = [];
-        desenhar();
-        document.getElementById('campo-mesa').value = "";
-    }
-
-    function atualizarHeaderCupom() {
-        const m = document.getElementById('campo-mesa').value;
-        document.getElementById('info-mesa-cupom').innerText = m ? "Mesa/Cli: " + m : "Mesa: Aguardando...";
-    }
-
-    function enviarZap() {
-        const mesa = document.getElementById('campo-mesa').value || "Balcão";
-        let msg = `*BOTECO 934*\n*Mesa:* ${mesa}\n---\n`;
-        conta.forEach(i => msg += `• ${i.n}: R$ ${i.p.toFixed(2)}\n`);
-        msg += `---\n*TOTAL: R$ ${vendaTotal.toFixed(2)}*`;
-        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`);
-    }
-</script>
-</body>
-</html>
+                    <div><span class="btn-
