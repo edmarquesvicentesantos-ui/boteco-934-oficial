@@ -2,14 +2,17 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Boteco 934 - PDV</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BOTECO 934 - PDV OFICIAL</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
         import { getDatabase, ref, set, push, update, remove } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
 
+        // Substitua pelos seus dados reais do Firebase
         const firebaseConfig = {
-            apiKey: "COLE_SUA_CHAVE_AQUI", 
+            apiKey: "SUA_API_KEY",
             authDomain: "boteco-934.firebaseapp.com",
             databaseURL: "https://boteco-934-default-rtdb.firebaseio.com",
             projectId: "boteco-934"
@@ -20,70 +23,142 @@
         let totalVenda = 0;
         let itensCarrinho = {};
 
-        window.verificarNome = function() {
+        // Libera os produtos apenas se tiver nome
+        window.validarAcesso = function() {
             const nome = document.getElementById('nome-cliente').value.trim();
-            const cards = document.querySelectorAll('.product-card');
-            cards.forEach(c => {
-                c.style.opacity = nome.length >= 3 ? "1" : "0.4";
-                c.style.pointerEvents = nome.length >= 3 ? "auto" : "none";
+            const btnProdutos = document.querySelectorAll('.card-produto');
+            btnProdutos.forEach(btn => {
+                btn.style.opacity = nome.length >= 3 ? "1" : "0.3";
+                btn.style.pointerEvents = nome.length >= 3 ? "auto" : "none";
             });
         }
 
-        window.adicionarItem = function(nome, preco) {
-            const nomeMesa = document.getElementById('nome-cliente').value.trim();
-            if (!itensCarrinho[nome]) { itensCarrinho[nome] = { preco, qtd: 1 }; } 
-            else { itensCarrinho[nome].qtd += 1; }
-            totalVenda += preco;
-
-            // Bloqueia a mesa no Mapa
-            update(ref(db, 'mesas_ativas/' + nomeMesa), { status: "OCUPADA" });
-            atualizarVisual();
-        }
-
-        function atualizarVisual() {
-            const area = document.getElementById('comanda-itens');
-            area.innerHTML = "";
-            for (let n in itensCarrinho) {
-                area.innerHTML += `<div style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid #ddd;">
-                    <span>${n} (x${itensCarrinho[n].qtd})</span>
-                    <b>R$ ${(itensCarrinho[n].preco * itensCarrinho[n].qtd).toFixed(2)}</b>
-                </div>`;
+        window.adicionarAoCarrinho = function(nome, preco) {
+            const cliente = document.getElementById('nome-cliente').value.trim();
+            if (!itensCarrinho[nome]) {
+                itensCarrinho[nome] = { preco: preco, qtd: 1 };
+            } else {
+                itensCarrinho[nome].qtd += 1;
             }
-            document.getElementById('resumo-total').innerText = "R$ " + totalVenda.toFixed(2);
+            totalVenda += preco;
+            
+            // Avisa o Mapa de Mesas que está ocupada
+            update(ref(db, 'mesas_ativas/' + cliente), { status: "OCUPADA" });
+            
+            renderizarCarrinho();
         }
 
-        window.finalizarVenda = function(metodo) {
-            const nomeMesa = document.getElementById('nome-cliente').value.trim();
+        window.removerUm = function(nome) {
+            if (itensCarrinho[nome]) {
+                totalVenda -= itensCarrinho[nome].preco;
+                itensCarrinho[nome].qtd -= 1;
+                if (itensCarrinho[nome].qtd <= 0) delete itensCarrinho[nome];
+                renderizarCarrinho();
+            }
+        }
+
+        function renderizarCarrinho() {
+            const lista = document.getElementById('lista-balcao');
+            lista.innerHTML = "";
+            for (let item in itensCarrinho) {
+                lista.innerHTML += `
+                    <div class="item-linha">
+                        <span>${item} (x${itensCarrinho[item].qtd})</span>
+                        <div>
+                            <span class="txt-verde">R$ ${(itensCarrinho[item].preco * itensCarrinho[item].qtd).toFixed(2)}</span>
+                            <button class="btn-x" onclick="removerUm('${item}')">&times;</button>
+                        </div>
+                    </div>`;
+            }
+            document.getElementById('valor-total').innerText = "R$ " + totalVenda.toFixed(2);
+        }
+
+        window.finalizarPagamento = function(metodo) {
+            const cliente = document.getElementById('nome-cliente').value.trim();
             if (totalVenda <= 0) return;
-            push(ref(db, 'vendas'), { cliente: nomeMesa, total: totalVenda, metodo, data: new Date().toLocaleString() })
-            .then(() => {
-                remove(ref(db, 'mesas_ativas/' + nomeMesa)); // Libera a mesa
+
+            push(ref(db, 'vendas'), {
+                cliente, total: totalVenda, metodo, data: new Date().toLocaleString()
+            }).then(() => {
+                remove(ref(db, 'mesas_ativas/' + cliente));
                 alert("Venda Finalizada!");
                 location.reload();
             });
         }
     </script>
+
     <style>
-        body { font-family: sans-serif; display: flex; height: 100vh; margin: 0; }
-        .sidebar { width: 200px; background: #333; color: white; padding: 20px; }
-        .main { flex: 1; padding: 20px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-        .product-card { border: 1px solid #ccc; padding: 20px; text-align: center; cursor: pointer; opacity: 0.4; pointer-events: none; }
-        .right { width: 300px; background: #eee; padding: 20px; display: flex; flex-direction: column; }
+        :root { --vermelho: #d32f2f; --verde: #2e7d32; --azul: #1976d2; --cinza: #f5f5f5; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; background: var(--cinza); }
+        
+        /* Header Profissional */
+        .header { background: var(--vermelho); color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        
+        .main-container { display: flex; flex: 1; overflow: hidden; }
+        
+        /* Menu Lateral */
+        .sidebar { width: 220px; background: white; border-right: 1px solid #ddd; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+        .btn-side { width: 100%; padding: 12px; border: none; border-radius: 5px; color: white; font-weight: bold; cursor: pointer; text-align: left; }
+        
+        /* Área Central (Produtos) */
+        .centro { flex: 1; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+        .busca-bar { width: 100%; padding: 12px; border: 2px solid var(--vermelho); border-radius: 25px; box-sizing: border-box; }
+        .categorias { display: flex; gap: 10px; }
+        .btn-cat { flex: 1; padding: 10px; border: 1px solid #ccc; background: white; border-radius: 5px; cursor: pointer; }
+        
+        .grid-produtos { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; overflow-y: auto; }
+        .card-produto { background: white; border-radius: 10px; padding: 15px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-bottom: 4px solid var(--vermelho); cursor: pointer; transition: 0.2s; }
+        
+        /* Balcão Direita */
+        .balcao { width: 350px; background: white; border-left: 1px solid #ddd; padding: 15px; display: flex; flex-direction: column; }
+        .input-cliente { width: 100%; padding: 12px; border: 1px solid var(--vermelho); border-radius: 5px; margin-bottom: 10px; box-sizing: border-box; background: #fffde7; }
+        .lista-itens { flex: 1; overflow-y: auto; border-top: 1px solid #eee; }
+        .item-linha { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee; font-size: 14px; }
+        .btn-x { background: #ffcdd2; border: none; color: var(--vermelho); border-radius: 50%; width: 24px; height: 24px; cursor: pointer; margin-left: 10px; }
+        
+        /* Rodapé de Pagamento */
+        .rodape-pag { border-top: 3px solid var(--vermelho); padding-top: 15px; }
+        .total-box { display: flex; justify-content: space-between; font-size: 28px; font-weight: bold; color: var(--vermelho); margin-bottom: 15px; }
+        .grid-pag { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .btn-pag { padding: 15px; border: none; border-radius: 5px; color: white; font-weight: bold; cursor: pointer; }
+        .txt-verde { color: var(--verde); font-weight: bold; }
     </style>
 </head>
-<body onload="verificarNome()">
-    <div class="sidebar">
-        <button onclick="location.href='mesas.html'" style="width:100%; padding:10px; margin-bottom:10px;">MAPA DE MESAS</button>
+<body>
+
+    <div class="header">
+        <h2 style="margin:0;">BOTECO 934 - PDV</h2>
+        <div id="relogio"></div>
     </div>
-    <div class="main">
-        <div class="product-card" onclick="adicionarItem('Cerveja', 5.00)">Cerveja<br>R$ 5,00</div>
-        <div class="product-card" onclick="adicionarItem('Refri', 4.50)">Refri<br>R$ 4,50</div>
-    </div>
-    <div class="right">
-        <input type="text" id="nome-cliente" placeholder="Mesa 1, Mesa 2..." onkeyup="verificarNome()" style="padding:10px; margin-bottom:10px;">
-        <div id="comanda-itens" style="flex:1;"></div>
-        <h2 id="resumo-total">R$ 0.00</h2>
-        <button onclick="finalizarVenda('PIX')" style="background:green; color:white; padding:10px;">PIX</button>
-    </div>
-</body>
-</html>
+
+    <div class="main-container">
+        <div class="sidebar">
+            <button class="btn-side" style="background:var(--azul)" onclick="location.href='mesas.html'"><i class="fas fa-chair"></i> MESAS</button>
+            <button class="btn-side" style="background:var(--verde)" onclick="location.href='estoque.html'"><i class="fas fa-box"></i> ESTOQUE</button>
+            <button class="btn-side" style="background:#7b1fa2" onclick="location.href='vendas.html'"><i class="fas fa-chart-line"></i> RELATÓRIOS</button>
+        </div>
+
+        <div class="centro">
+            <input type="text" class="busca-bar" placeholder="🔍 Buscar produto...">
+            <div class="categorias">
+                <button class="btn-cat">Todos</button>
+                <button class="btn-cat">Bebidas</button>
+                <button class="btn-cat">Comidas</button>
+            </div>
+            <div class="grid-produtos">
+                <div class="card-produto" onclick="adicionarAoCarrinho('Cerveja Lata', 5.00)"><h3>🍺 Cerveja</h3><b>R$ 5,00</b></div>
+                <div class="card-produto" onclick="adicionarAoCarrinho('Refrigerante', 4.50)"><h3>🥤 Refri</h3><b>R$ 4,50</b></div>
+                <div class="card-produto" onclick="adicionarAoCarrinho('Dose Pitú', 3.00)"><h3>🥃 Pitú</h3><b>R$ 3,00</b></div>
+                <div class="card-produto" onclick="adicionarAoCarrinho('Espetinho', 12.00)"><h3>🍢 Espeto</h3><b>R$ 12,00</b></div>
+            </div>
+        </div>
+
+        <div class="balcao">
+            <input type="text" id="nome-cliente" class="input-cliente" placeholder="NOME DO CLIENTE / MESA" onkeyup="validarAcesso()">
+            <h3>🛒 Itens no Balcão</h3>
+            <div class="lista-itens" id="lista-balcao"></div>
+            
+            <div class="rodape-pag">
+                <div class="total-box"><span>TOTAL</span> <span id="valor-total">R$ 0.00</span></div>
+                <div class="grid-pag">
+                    <button class="btn-
