@@ -3,16 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BOTECO 934 - PDV Ativo</title>
+    <title>BOTECO 934 - PDV COMPLETO + RÁDIO</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
         import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
 
-        // CONFIGURAÇÃO DO SEU FIREBASE
         const firebaseConfig = {
-            apiKey: "SUA_API_KEY_AQUI",
+            apiKey: "COLE_SUA_CHAVE_AQUI", 
             authDomain: "boteco-934.firebaseapp.com",
             databaseURL: "https://boteco-934-default-rtdb.firebaseio.com",
             projectId: "boteco-934",
@@ -25,111 +24,108 @@
         const db = getDatabase(app);
 
         let totalVenda = 0;
-        let itensComanda = [];
+        let itensCarrinho = [];
 
-        // Adiciona o produto na lista visual da direita
         window.adicionarItem = function(nome, preco) {
-            itensComanda.push({nome, preco});
+            itensCarrinho.push({nome, preco});
             totalVenda += preco;
-            
-            const lista = document.getElementById('lista-itens');
-            const itemHTML = `<div style="display:flex; justify-content:space-between; margin-bottom:5px; font-size:14px;">
-                                <span>${nome}</span> <span>R$ ${preco.toFixed(2)}</span>
-                              </div>`;
-            lista.innerHTML += itemHTML;
+            document.getElementById('comanda-itens').innerHTML += `<div style="display:flex; justify-content:space-between; margin-bottom:5px; font-size:14px;"><span>${nome}</span> <span>R$ ${preco.toFixed(2)}</span></div>`;
             document.getElementById('resumo-total').innerText = "R$ " + totalVenda.toFixed(2);
-        };
+        }
 
-        // Envia a venda para o Banco de Dados
         window.finalizarVenda = function(metodo) {
-            if (totalVenda === 0) return alert("Adicione produtos primeiro!");
-
+            if(totalVenda === 0) { alert("Carrinho vazio!"); return; }
             const vendasRef = ref(db, 'vendas');
-            const novaVenda = push(vendasRef);
-            
-            set(novaVenda, {
-                total: totalVenda,
-                metodo: metodo,
-                data: new Date().toLocaleString('pt-BR'),
-                produtos: itensComanda
-            }).then(() => {
-                alert("✅ Venda no " + metodo + " registrada!");
-                limparTudo();
-            });
-        };
+            set(push(vendasRef), { total: totalVenda, metodo: metodo, data: new Date().toLocaleString('pt-BR'), produtos: itensCarrinho })
+            .then(() => { alert("Venda registrada!"); limparPainel(); });
+        }
 
-        window.limparTudo = function() {
-            totalVenda = 0;
-            itensComanda = [];
-            document.getElementById('lista-itens').innerHTML = "";
-            document.getElementById('resumo-total').innerText = "R$ 0,00";
-        };
+        window.limparPainel = function() {
+            totalVenda = 0; itensCarrinho = [];
+            document.getElementById('comanda-itens').innerHTML = "";
+            document.getElementById('resumo-total').innerText = "R$ 0.00";
+        }
     </script>
 
     <style>
-        body { font-family: sans-serif; margin: 0; background: #f4f7f6; display: flex; flex-direction: column; height: 100vh; }
-        .header { background: #d32f2f; color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
-        .main { display: flex; flex: 1; overflow: hidden; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background-color: #f4f7f6; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        .header { background-color: #d32f2f; color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .radio-player { display: flex; align-items: center; background: rgba(0,0,0,0.2); padding: 5px 15px; border-radius: 30px; gap: 10px; }
+        .radio-player i { color: #ffc107; }
         
-        /* Coluna Produtos */
-        .produtos { flex: 1; padding: 20px; overflow-y: auto; background: white; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
-        .card { background: #eee; padding: 15px; border-radius: 8px; text-align: center; cursor: pointer; border-bottom: 3px solid #d32f2f; }
-        .card:active { transform: scale(0.95); }
-        .card b { color: #28a745; display: block; margin-top: 5px; }
+        .main-container { display: flex; flex: 1; overflow: hidden; }
+        .sidebar { width: 220px; background-color: white; border-right: 1px solid #ddd; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+        .btn-menu { width: 100%; border: none; padding: 12px; border-radius: 5px; color: white; font-weight: bold; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 10px; }
+        .btn-blue { background-color: #1976d2; } .btn-green { background-color: #388e3c; } .btn-purple { background-color: #7b1fa2; } .btn-grey { background-color: #616161; }
 
-        /* Coluna Comanda (Direita) */
-        .comanda { width: 320px; background: white; border-left: 1px solid #ddd; padding: 15px; display: flex; flex-direction: column; }
-        .itens-comanda { flex: 1; overflow-y: auto; border-top: 1px solid #eee; padding-top: 10px; }
-        .total { font-size: 24px; font-weight: bold; color: #d32f2f; border-top: 2px solid #ddd; padding: 10px 0; }
+        .content { flex: 1; padding: 20px; overflow-y: auto; background-color: white; }
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 15px; }
+        .product-card { background: #fdfdfd; border: 1px solid #eee; border-radius: 10px; padding: 15px; text-align: center; cursor: pointer; border-bottom: 4px solid #d32f2f; }
+        .product-card b { color: #28a745; display: block; margin-top: 5px; }
+
+        .right-bar { width: 300px; background-color: white; border-left: 1px solid #ddd; padding: 15px; display: flex; flex-direction: column; }
+        .comanda-lista { flex: 1; overflow-y: auto; margin-top: 10px; border-top: 1px solid #eee; padding-top: 10px; }
+        .total-box { border-top: 3px solid #ddd; padding-top: 10px; margin-top: auto; }
+        .total-valor { font-size: 24px; font-weight: bold; color: #d32f2f; display: flex; justify-content: space-between; margin-bottom: 15px; }
         
-        /* Botões de Ação */
-        .btn-pagamento { border: none; padding: 12px; color: white; font-weight: bold; border-radius: 5px; cursor: pointer; margin: 2px; font-size: 12px; }
-        .pix { background: #4db6ac; } .dinheiro { background: #26a69a; } .cartao { background: #42a5f5; }
-        .limpar { background: #757575; grid-column: span 3; }
-        .grid-btns { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; }
+        .pagamento-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+        .btn-pag { border: none; padding: 10px; border-radius: 5px; color: white; font-weight: bold; cursor: pointer; }
+        .btn-pix { background: #4db6ac; } .btn-dinheiro { background: #26a69a; } .btn-cartao { background: #42a5f5; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <div><b>BOTECO 934</b><br><small>CONTROLE DE VENDAS</small></div>
-        <div id="data-hora"></div>
+        <div><h1 style="margin:0; font-size:22px;">BOTECO 934</h1></div>
+        
+        <div class="radio-player">
+            <i class="fas fa-compact-disc fa-spin"></i>
+            <span style="font-size: 12px; font-weight: bold;">RÁDIO ROCK</span>
+            <audio controls style="height: 30px; width: 180px;">
+                <source src="https://stream.itinerante.com.br/8026/stream" type="audio/mpeg">
+                Seu navegador não suporta áudio.
+            </audio>
+        </div>
+
+        <div id="relogio" style="font-size: 14px;"></div>
     </div>
 
-    <div class="main">
-        <div class="produtos">
-            <input type="text" placeholder="🔍 Buscar produto..." style="width:100%; padding:10px; border-radius:20px; border:1px solid #ddd; margin-bottom:20px;">
-            <div class="grid">
-                <div class="card" onclick="adicionarItem('Cerveja Lata', 5.00)">Cerveja Lata <b>R$ 5,00</b></div>
-                <div class="card" onclick="adicionarItem('Refrigerante', 4.50)">Refri <b>R$ 4,50</b></div>
-                <div class="card" onclick="adicionarItem('Dose Pitú', 3.00)">Dose Pitú <b>R$ 3,00</b></div>
-                <div class="card" onclick="adicionarItem('Espetinho', 12.00)">Espetinho <b>R$ 12,00</b></div>
+    <div class="main-container">
+        <div class="sidebar">
+            <h3>NAVEGAÇÃO</h3>
+            <button class="btn-menu btn-blue" onclick="location.href='mesas.html'"><i class="fas fa-chair"></i> MESAS</button>
+            <button class="btn-menu btn-green" onclick="location.href='estoque.html'"><i class="fas fa-box"></i> ESTOQUE</button>
+            <button class="btn-menu btn-purple" onclick="location.href='vendas.html'"><i class="fas fa-chart-line"></i> RELATÓRIOS</button>
+            <button class="btn-menu btn-grey" onclick="location.href='precificacao.html'"><i class="fas fa-calculator"></i> PRECIFICAÇÃO</button>
+        </div>
+
+        <div class="content">
+            <input type="text" placeholder="🔍 Buscar produto..." style="width:100%; padding:12px; border:2px solid #d32f2f; border-radius:25px; margin-bottom:20px; box-sizing:border-box;">
+            <div class="product-grid">
+                <div class="product-card" onclick="adicionarItem('Cerveja Lata', 5.00)"><span>🍺</span><h3>Cerveja Lata</h3><b>R$ 5,00</b></div>
+                <div class="product-card" onclick="adicionarItem('Refrigerante', 4.50)"><span>🥤</span><h3>Refrigerante</h3><b>R$ 4,50</b></div>
+                <div class="product-card" onclick="adicionarItem('Dose Pitú', 3.00)"><span>🥃</span><h3>Dose Pitú</h3><b>R$ 3,00</b></div>
+                <div class="product-card" onclick="adicionarItem('Espetinho', 12.00)"><span>🍢</span><h3>Espetinho</h3><b>R$ 12,00</b></div>
             </div>
         </div>
 
-        <div class="comanda">
-            <h3>🛒 Balcão</h3>
-            <div class="itens-comanda" id="lista-itens"></div>
-            
-            <div class="total">
-                TOTAL <span id="resumo-total" style="float:right;">R$ 0,00</span>
-            </div>
-
-            <div class="grid-btns">
-                <button class="btn-pagamento pix" onclick="finalizarVenda('PIX')">PIX</button>
-                <button class="btn-pagamento dinheiro" onclick="finalizarVenda('DINHEIRO')">DINHEIRO</button>
-                <button class="btn-pagamento cartao" onclick="finalizarVenda('CARTÃO')">CARTÃO</button>
-                <button class="btn-pagamento limpar" onclick="limparTudo()">LIMPAR COMANDA</button>
+        <div class="right-bar">
+            <h3>🛒 BALCÃO</h3>
+            <div class="comanda-lista" id="comanda-itens"></div>
+            <div class="total-box">
+                <div class="total-valor"><span>TOTAL</span> <span id="resumo-total">R$ 0.00</span></div>
+                <div class="pagamento-grid">
+                    <button class="btn-pag btn-pix" onclick="finalizarVenda('PIX')">PIX</button>
+                    <button class="btn-pag btn-dinheiro" onclick="finalizarVenda('DINHEIRO')">DINHEIRO</button>
+                    <button class="btn-pag btn-cartao" onclick="finalizarVenda('CARTÃO')">CARTÃO</button>
+                    <button class="btn-pag" style="background:#bdbdbd; grid-column:span 2; color:333;" onclick="limparPainel()">LIMPAR</button>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Atualiza a hora no cabeçalho
-        setInterval(() => {
-            document.getElementById('data-hora').innerText = new Date().toLocaleString('pt-BR');
-        }, 1000);
+        setInterval(() => { document.getElementById('relogio').innerText = new Date().toLocaleString('pt-BR'); }, 1000);
     </script>
 </body>
 </html>
