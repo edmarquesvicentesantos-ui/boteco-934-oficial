@@ -2,25 +2,96 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Boteco 934 - Mesas</title>
+    <title>Mapa de Mesas - Boteco 934</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "COLE_SUA_CHAVE_AQUI", 
+            authDomain: "boteco-934.firebaseapp.com",
+            databaseURL: "https://boteco-934-default-rtdb.firebaseio.com",
+            projectId: "boteco-934",
+            storageBucket: "boteco-934.appspot.com",
+            messagingSenderId: "107123456789",
+            appId: "1:107123456789:web:id_do_app"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // FUNÇÃO QUE BLOQUEIA AS MESAS AUTOMATICAMENTE
+        function monitorarMesas() {
+            const mesasRef = ref(db, 'mesas_ativas/');
+            
+            onValue(mesasRef, (snapshot) => {
+                const dados = snapshot.val();
+                
+                // Primeiro, coloca todas as mesas como LIVRES (Verdes)
+                for (let i = 1; i <= 10; i++) {
+                    const btn = document.getElementById('mesa-' + i);
+                    if (btn) {
+                        btn.style.background = "#28a745";
+                        btn.innerHTML = `Mesa ${i < 10 ? '0' + i : i} <br> <small>LIVRE</small>`;
+                        btn.onclick = () => irParaPDV(i);
+                    }
+                }
+
+                // Agora, marca as que estão OCUPADAS no Firebase
+                if (dados) {
+                    Object.keys(dados).forEach(nomeMesa => {
+                        // Se o nome for "Mesa 1", "Mesa 2", etc.
+                        const numero = nomeMesa.replace('Mesa ', '');
+                        const btnOcupado = document.getElementById('mesa-' + parseInt(numero));
+                        
+                        if (btnOcupado) {
+                            btnOcupado.style.background = "#d32f2f"; // Vermelho
+                            btnOcupado.innerHTML = `Mesa ${numero} <br> <small>OCUPADA</small>`;
+                            btnOcupado.onclick = () => alert("⚠️ Esta mesa está ocupada! Finalize o pagamento no PDV.");
+                        }
+                    });
+                }
+            });
+        }
+
+        function irParaPDV(numero) {
+            // Leva o número da mesa para o PDV automaticamente
+            localStorage.setItem('mesa_selecionada', "Mesa " + numero);
+            location.href = 'index.html';
+        }
+
+        window.onload = monitorarMesas;
+    </script>
+
     <style>
-        .mesa { width: 80px; height: 80px; background: #28a745; color: white; display: inline-flex; align-items: center; justify-content: center; margin: 10px; border-radius: 10px; cursor: pointer; }
-        .ocupada { background: #dc3545; }
+        body { font-family: sans-serif; background: #f4f7f6; padding: 20px; }
+        .grid-mesas { display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px; margin-top: 20px; }
+        .mesa-btn { 
+            padding: 25px 10px; border: none; border-radius: 10px; color: white; 
+            font-weight: bold; cursor: pointer; text-align: center; transition: 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .mesa-btn small { font-weight: normal; font-size: 11px; }
     </style>
 </head>
 <body>
-    <a href="index.html">⬅ Voltar</a>
-    <h1>Mapa de Mesas</h1>
-    <div onclick="this.classList.toggle('ocupada')" class="mesa">Mesa 01</div>
-    <div onclick="this.classList.toggle('ocupada')" class="mesa">Mesa 02</div>
-    <div onclick="this.classList.toggle('ocupada')" class="mesa">Mesa 03</div>
-    <div onclick="this.classList.toggle('ocupada')" class="mesa">Mesa 04</div>
-    <div onclick="this.classList.toggle('ocupada')" class="mesa">Mesa 05</div>
-    <div onclick="this.classList.toggle('ocupada')" class="mesa">Mesa 06</div>
-    <div onclick="this.classList.toggle('ocupada')" class="mesa">Mesa 07</div>
-    <div onclick="this.classList.toggle('ocupada')" class="mesa">Mesa 08</div>
-    <div onclick="this.classList.toggle('ocupada')" class="mesa">Mesa 09</div>
-    <div onclick="this.classList.toggle('ocupada')" class="mesa">Mesa 10</div>
-    <p><i>Dica: Clique na mesa para mudar a cor (Verde = Livre / Vermelho = Ocupada)</i></p>
+    <button onclick="location.href='index.html'" style="padding:10px; cursor:pointer;">← Voltar ao PDV</button>
+    <h1>Mapa de Mesas - Boteco 934</h1>
+    <p>As mesas ficam vermelhas automaticamente quando alguém consome.</p>
+
+    <div class="grid-mesas">
+        <button id="mesa-1" class="mesa-btn">Mesa 01</button>
+        <button id="mesa-2" class="mesa-btn">Mesa 02</button>
+        <button id="mesa-3" class="mesa-btn">Mesa 03</button>
+        <button id="mesa-4" class="mesa-btn">Mesa 04</button>
+        <button id="mesa-5" class="mesa-btn">Mesa 05</button>
+        <button id="mesa-6" class="mesa-btn">Mesa 06</button>
+        <button id="mesa-7" class="mesa-btn">Mesa 07</button>
+        <button id="mesa-8" class="mesa-btn">Mesa 08</button>
+        <button id="mesa-9" class="mesa-btn">Mesa 09</button>
+        <button id="mesa-10" class="mesa-btn">Mesa 10</button>
+    </div>
 </body>
 </html>
